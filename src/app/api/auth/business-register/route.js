@@ -9,12 +9,22 @@ import { ROLES } from "@/app/shared/const";
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
-    const dataTest = await req.json();
-    console.log("🚀 ~ POST ~ dataTest:", dataTest);
-    if (session) {
-      console.log("🚀 ~ POST ~ session:", session);
-      //   redirect("/");
-    }
+    const requestData = await req.json();
+    const {
+      email,
+      password,
+      confirm_password,
+      full_name,
+      phone,
+      name,
+      address,
+      coordinate,
+      hotline,
+      description,
+      menu_image,
+      restaurant_image,
+      tables,
+    } = requestData;
 
     // validate
     if (!validator.isEmail(email)) {
@@ -24,14 +34,14 @@ export async function POST(req) {
       );
     }
 
-    if (!validator.isLength(password, { min: 6 })) {
+    if (!session && !validator.isLength(password, { min: 6 })) {
       return NextResponse.json(
         { message: "Mật khẩu phải có ít nhất 6 ký tự" },
         { status: ErrorsStatus.Bad_Request }
       );
     }
 
-    if (password !== confirm_password) {
+    if (!session && password !== confirm_password) {
       return NextResponse.json(
         { message: "Mật khẩu không khớp" },
         { status: ErrorsStatus.Bad_Request }
@@ -45,21 +55,36 @@ export async function POST(req) {
       );
     }
 
-    if (!validator.isMobilePhone(phone, "vi-VN")) {
+    if (!session && !validator.isMobilePhone(phone, "vi-VN")) {
       return NextResponse.json(
         { message: "Số điện thoại không hợp lệ" },
         { status: ErrorsStatus.Bad_Request }
       );
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
+    if (!validator.isMobilePhone(hotline, "vi-VN")) {
+      return NextResponse.json(
+        { message: "Hotline không hợp lệ" },
+        { status: ErrorsStatus.Bad_Request }
+      );
+    }
+
+    const buildHeader = new Headers();
+    buildHeader.append("Content-Type", "application/json");
+    if (session.accessToken) {
+      buildHeader.append("Authorization", `Bearer ${session.accessToken}`);
+    }
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/business-register`, {
       method: "POST",
-      body: JSON.stringify({ email, password, full_name, phone, role: ROLES.USER }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      body: JSON.stringify({
+        ...requestData,
+        role: ROLES.BUSINESS_OWNER,
+      }),
+      headers: buildHeader,
     });
     const data = await res.json();
+    console.log("🚀 ~ POST ~ data:", data);
 
     if (data?.status === ErrorsStatus.Created) {
       return NextResponse.json({ message: "Đăng ký thành công" }, { status: data?.status });
@@ -67,6 +92,7 @@ export async function POST(req) {
       return NextResponse.json({ message: data?.message }, { status: data?.status });
     }
   } catch (error) {
+    console.log("🚀 ~ POST ~ error:", error);
     return NextResponse.json(
       { message: "Có lỗi xảy ra. Vui lòng thử lại sau" },
       { status: ErrorsStatus.Internal_Server_Error }

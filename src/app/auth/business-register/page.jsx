@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
 import { uploadMultipleImage } from "@/services/uploadImageService";
 import { Button } from "@/components/ui/button";
-import { SquareX } from "lucide-react";
+import { Asterisk, ChevronLeft, CircleChevronLeft, SquareX } from "lucide-react";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
 
 export default function BusinessRegisterPage() {
@@ -70,6 +70,19 @@ export default function BusinessRegisterPage() {
       ...restaurantData,
       tables,
     };
+
+    const requiredCheck = Object.entries(submitValue).some(([key, value]) => {
+      const loggedinNotRequireField = ["password", "confirm_password", "phone", "description"];
+      if (isLogin) {
+        return !loggedinNotRequireField.includes(key) && _.isEmpty(value);
+      }
+      return key !== "description" && _.isEmpty(value);
+    });
+
+    if (requiredCheck) {
+      setError("Nhập đủ các thông tin bắt buộc.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -78,7 +91,19 @@ export default function BusinessRegisterPage() {
         method: "POST",
         body: JSON.stringify(submitValue),
       });
+
+      const response = await result.json();
+      if (!result.ok && response?.message) {
+        setError(response.message);
+      }
+
+      if (result?.ok && response?.message) {
+        //MOCK
+        console.log("SIGNED");
+      }
+      console.log("🚀 ~ handleSubmit ~ result:", response);
     } catch (errors) {
+      setError(errors?.message);
       console.log("🚀 ~ handleSubmit ~ errors:", errors);
     } finally {
       setLoading(false);
@@ -158,15 +183,17 @@ export default function BusinessRegisterPage() {
       ...prev,
       restaurant_image: prev?.restaurant_image?.filter((item) => item?.public_id !== id),
     }));
-    return;
   };
 
   const renderStep1 = () => (
     <>
       <h2 className="text-xl font-bold text-[#FC8842] mb-4">Thông tin tài khoản</h2>
       <div>
-        <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="email" className="flex text-sm font-bold text-gray-700 mb-1">
           Email
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           id="email"
@@ -182,8 +209,11 @@ export default function BusinessRegisterPage() {
       {!isLogin && (
         <>
           <div className="mt-4">
-            <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-1">
+            <label htmlFor="password" className="flex text-sm font-bold text-gray-700 mb-1">
               Mật khẩu
+              <span>
+                <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+              </span>
             </label>
             <input
               id="password"
@@ -195,11 +225,11 @@ export default function BusinessRegisterPage() {
             />
           </div>
           <div className="mt-4">
-            <label
-              htmlFor="confirm_password"
-              className="block text-sm font-bold text-gray-700 mb-1"
-            >
+            <label htmlFor="confirm_password" className="flex text-sm font-bold text-gray-700 mb-1">
               Nhập lại mật khẩu
+              <span>
+                <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+              </span>
             </label>
             <input
               id="confirm_password"
@@ -216,8 +246,11 @@ export default function BusinessRegisterPage() {
       )}
 
       <div className="mt-4">
-        <label htmlFor="full_name" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="full_name" className="flex text-sm font-bold text-gray-700 mb-1">
           Họ và tên
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           id="full_name"
@@ -232,8 +265,11 @@ export default function BusinessRegisterPage() {
 
       {!isLogin && (
         <div className="mt-4">
-          <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-1">
+          <label htmlFor="phone" className="flex text-sm font-bold text-gray-700 mb-1">
             Số điện thoại
+            <span>
+              <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+            </span>
           </label>
           <input
             type="tel"
@@ -266,27 +302,17 @@ export default function BusinessRegisterPage() {
           onClick={() => setCurrentStep(1)}
           className="mr-4 text-gray-600 hover:text-[#FC8842] cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ChevronLeft />
         </button>
         <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
       </div>
 
       <div>
-        <label htmlFor="restaurant-name" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="restaurant-name" className="flex text-sm font-bold text-gray-700 mb-1">
           Tên nhà hàng
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           type="text"
@@ -299,8 +325,11 @@ export default function BusinessRegisterPage() {
       </div>
 
       <div className="mt-4">
-        <label htmlFor="restaurant-address" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="restaurant-address" className="flex text-sm font-bold text-gray-700 mb-1">
           Địa chỉ nhà hàng
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           type="text"
@@ -315,9 +344,12 @@ export default function BusinessRegisterPage() {
       <div className="mt-4">
         <label
           htmlFor="restaurant-coordinates"
-          className="block text-sm font-bold text-gray-700 mb-1"
+          className="flex text-sm font-bold text-gray-700 mb-1"
         >
           Tọa độ
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           type="text"
@@ -330,8 +362,11 @@ export default function BusinessRegisterPage() {
       </div>
 
       <div className="mt-4">
-        <label htmlFor="restaurant-hotline" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="restaurant-hotline" className="flex text-sm font-bold text-gray-700 mb-1">
           Hotline
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           type="tel"
@@ -370,20 +405,7 @@ export default function BusinessRegisterPage() {
           onClick={() => setCurrentStep(2)}
           className="mr-4 text-gray-600 hover:text-[#FC8842] cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ChevronLeft />
         </button>
         <h2 className="text-xl font-bold text-[#FC8842]">Hình ảnh và mô tả</h2>
       </div>
@@ -391,7 +413,7 @@ export default function BusinessRegisterPage() {
       <div>
         <label
           htmlFor="restaurant-description"
-          className="block text-sm font-bold text-gray-700 mb-1"
+          className="flex text-sm font-bold text-gray-700 mb-1"
         >
           Mô tả nhà hàng
         </label>
@@ -400,16 +422,19 @@ export default function BusinessRegisterPage() {
           id="restaurant-description"
           value={restaurantData.description}
           onChange={(e) => setRestaurantData({ ...restaurantData, description: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent h-24"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent h-24 resize-none"
         />
       </div>
 
       <div className="mt-4 flex flex-row justify-between self-center">
         <label
           htmlFor="restaurant-menu-image"
-          className="block text-sm font-bold text-gray-700 mb-1"
+          className="flex text-sm font-bold text-gray-700 mb-1"
         >
           Ảnh menu (tối đa 5 ảnh)
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           ref={menuImageRef}
@@ -454,8 +479,11 @@ export default function BusinessRegisterPage() {
       )}
 
       <div className="mt-4 flex flex-row justify-between self-center">
-        <label htmlFor="restaurant-image" className="block text-sm font-bold text-gray-700 mb-1">
+        <label htmlFor="restaurant-image" className="flex text-sm font-bold text-gray-700 mb-1">
           Ảnh nhà hàng (tối đa 5 ảnh)
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
         </label>
         <input
           ref={restaurantImageRef}
@@ -485,7 +513,7 @@ export default function BusinessRegisterPage() {
             <div key={index} className="relative w-20 h-20">
               <span
                 className="absolute top-0 right-0 bg-gray-500 cursor-pointer"
-                onClick={() => handleRemoveImage("menu", image?.public_id)}
+                onClick={() => handleRemoveImage("restaurant", image?.public_id)}
               >
                 <SquareX size={16} color="#ffffff" />
               </span>
@@ -499,6 +527,12 @@ export default function BusinessRegisterPage() {
         </div>
       )}
 
+      <label htmlFor="restaurant-image" className="flex text-sm font-bold text-gray-700 mb-1">
+        Thông tin bàn (có thể chọn nhiều)
+        <span>
+          <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+        </span>
+      </label>
       {[
         { key: "table2", label: "Bàn 2 chỗ" },
         { key: "table4", label: "Bàn 4 chỗ" },
@@ -513,7 +547,7 @@ export default function BusinessRegisterPage() {
                 checked={selectedTables[key]}
                 onChange={handleCheckboxChange}
               />
-              <label htmlFor="tables-seat" className="block text-sm font-bold text-gray-700 mb-1">
+              <label htmlFor="tables-seat" className="flex text-sm font-bold text-gray-700 mb-1">
                 {label}
               </label>
             </div>
@@ -553,8 +587,7 @@ export default function BusinessRegisterPage() {
     <>
       {loading && <FullScreenLoader />}
       <div className="flex h-screen w-full">
-        {/* Phần hình ảnh - chiếm 1/2 màn hình */}
-        <div className="relative w-1/2 h-full hidden md:block">
+        <div className="relative w-1/2 h-full hidden md:flex">
           <div
             className="absolute inset-0 w-full h-full bg-cover bg-center"
             style={{
@@ -563,14 +596,13 @@ export default function BusinessRegisterPage() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
         </div>
-        {/* Phần form đăng ký - chiếm 1/2 màn hình */}
         <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-white p-8">
           <div className="w-full max-w-md">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-[#FC8842]">Liên kết với E-Restaurant!</h1>
             </div>
 
-            {error && <div className="p-4 bg-red-100 text-red-800 rounded mb-4">{error}</div>}
+            {error && <div className="px-4 py-1 bg-red-100 text-red-800 rounded mb-4">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {currentStep === 1 && renderStep1()}
