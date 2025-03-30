@@ -7,6 +7,7 @@ import loginBG from "@/assets/img/login-bg.jpg";
 import { ErrorsStatus } from "@/app/shared/errorsStatus";
 import { useRouter } from "next/navigation";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const [registerData, setRegisterData] = useState({
@@ -72,6 +73,9 @@ export default function RegisterPage() {
           {/* Phần form đăng ký - chiếm 1/2 màn hình */}
           <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-white p-8">
             <div className="w-full max-w-md">
+              <Link href="/" className="mx-auto">
+                <img src="/logo-e.png" alt="Logo" />
+              </Link>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-[#FC8842]">Đăng Ký</h1>
               </div>

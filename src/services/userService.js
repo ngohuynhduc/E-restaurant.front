@@ -1,0 +1,20 @@
+import { getServerSession } from "next-auth";
+import { BaseService } from "./baseService";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+export class UserService {
+  async buildAuthHeader() {
+    const session = await getServerSession(authOptions);
+    console.log("🚀 ~ Home ~ session:", session);
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
+    };
+  }
+
+  async getUserInfo() {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.get("/user-info", headers);
+    return response;
+  }
+}

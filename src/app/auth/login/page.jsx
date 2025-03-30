@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import loginBG from "@/assets/img/login-bg.jpg";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,7 +54,6 @@ export default function LoginPage() {
     <>
       {status === "unauthenticated" && (
         <div className="relative h-screen w-full overflow-hidden">
-          {/* Background hình ảnh với animation */}
           <div
             className="absolute inset-0 w-full h-full bg-cover bg-center animate-slow-pan"
             style={{
@@ -61,10 +61,11 @@ export default function LoginPage() {
             }}
           ></div>
 
-          {/* Container chính */}
-          <div className="relative h-full w-full flex items-center justify-center p-4">
-            {/* Form đăng nhập với nền blur */}
-            <div className="bg-white/70 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-md transition-all duration-500 hover:shadow-xl">
+          <div className="relative h-full w-full flex items-center justify-end p-4">
+            <div className="relative bg-white/70 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-md transition-all duration-500 hover:shadow-xl mr-40">
+              <Link href="/" className="absolute top-[-100px] left-0 mx-auto">
+                <img src="/logo-e.png" alt="Logo" />
+              </Link>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-[#FC8842]">Đăng Nhập</h1>
               </div>
@@ -92,9 +93,9 @@ export default function LoginPage() {
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                       Mật khẩu
                     </label>
-                    <a href="#" className="text-sm text-[#FC8842] hover:underline">
+                    <Link href="#" className="text-sm text-[#FC8842] hover:underline">
                       Quên mật khẩu?
-                    </a>
+                    </Link>
                   </div>
                   <input
                     id="password"
@@ -114,6 +115,14 @@ export default function LoginPage() {
                 >
                   {loading ? "Đang đăng nhập" : "Đăng nhập"}
                 </button>
+                <div className="w-full text-center">
+                  <Link
+                    href="/auth/register"
+                    className="text-[16px] text-[#FC8842] hover:underline"
+                  >
+                    Đăng ký tài khoản mới
+                  </Link>
+                </div>
               </form>
             </div>
           </div>

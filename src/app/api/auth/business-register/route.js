@@ -71,7 +71,7 @@ export async function POST(req) {
 
     const buildHeader = new Headers();
     buildHeader.append("Content-Type", "application/json");
-    if (session.accessToken) {
+    if (session?.accessToken) {
       buildHeader.append("Authorization", `Bearer ${session.accessToken}`);
     }
 

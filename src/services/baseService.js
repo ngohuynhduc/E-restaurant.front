@@ -1,16 +1,12 @@
-class BaseService {
-  constructor(baseURL) {
-    this.baseURL = baseURL;
-  }
+export class BaseService {
+  static baseURL = process.env.NEXT_PUBLIC_API_URL;
 
-  async request(endpoint, method = "GET", body = null, headers = {}) {
+  static async request(endpoint, method = "GET", body = null, headers = {}) {
     const options = {
       method,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
+      headers,
     };
+    console.log("🚀 ~ BaseService ~ request ~ options:", options);
 
     if (body) {
       options.body = JSON.stringify(body);
@@ -19,8 +15,9 @@ class BaseService {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, options);
       const data = await response.json();
+      console.log("🚀 ~ BaseService ~ request ~ data:", data);
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.status || "Something went wrong");
       }
       return data;
     } catch (error) {
@@ -28,21 +25,19 @@ class BaseService {
       throw error;
     }
   }
-  get(endpoint, headers = {}) {
+  static get(endpoint, headers = {}) {
     return this.request(endpoint, "GET", null, headers);
   }
 
-  post(endpoint, data, headers = {}) {
+  static post(endpoint, data, headers = {}) {
     return this.request(endpoint, "POST", data, headers);
   }
 
-  put(endpoint, data, headers = {}) {
+  static put(endpoint, data, headers = {}) {
     return this.request(endpoint, "PUT", data, headers);
   }
 
-  delete(endpoint, headers = {}) {
+  static delete(endpoint, headers = {}) {
     return this.request(endpoint, "DELETE", null, headers);
   }
 }
-
-export default new Service(process.env.NEXT_PUBLIC_API_URL);

@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
 import { uploadMultipleImage } from "@/services/uploadImageService";
 import { Button } from "@/components/ui/button";
-import { Asterisk, ChevronLeft, CircleChevronLeft, SquareX } from "lucide-react";
+import { Asterisk, ChevronLeft, SquareX } from "lucide-react";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function BusinessRegisterPage() {
   const { data: session, status } = useSession();
@@ -46,7 +48,7 @@ export default function BusinessRegisterPage() {
   });
   const menuImageRef = useRef(null);
   const restaurantImageRef = useRef(null);
-  console.log("🚀 ~ BusinessRegisterPage ~ selectedTables:", selectedTables, tableQuantities);
+  const router = useRouter();
 
   useEffect(() => {
     if (status === "authenticated" && !_.isEmpty(session)) {
@@ -99,7 +101,7 @@ export default function BusinessRegisterPage() {
 
       if (result?.ok && response?.message) {
         //MOCK
-        console.log("SIGNED");
+        router.push("/");
       }
       console.log("🚀 ~ handleSubmit ~ result:", response);
     } catch (errors) {
@@ -378,6 +380,22 @@ export default function BusinessRegisterPage() {
         />
       </div>
 
+      <div>
+        <label
+          htmlFor="restaurant-description"
+          className="flex text-sm font-bold text-gray-700 mb-1"
+        >
+          Mô tả nhà hàng
+        </label>
+        <textarea
+          name="restaurant-description"
+          id="restaurant-description"
+          value={restaurantData.description}
+          onChange={(e) => setRestaurantData({ ...restaurantData, description: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent h-24 resize-none"
+        />
+      </div>
+
       <div className="flex justify-between mt-6">
         <button
           type="button"
@@ -407,23 +425,7 @@ export default function BusinessRegisterPage() {
         >
           <ChevronLeft />
         </button>
-        <h2 className="text-xl font-bold text-[#FC8842]">Hình ảnh và mô tả</h2>
-      </div>
-
-      <div>
-        <label
-          htmlFor="restaurant-description"
-          className="flex text-sm font-bold text-gray-700 mb-1"
-        >
-          Mô tả nhà hàng
-        </label>
-        <textarea
-          name="restaurant-description"
-          id="restaurant-description"
-          value={restaurantData.description}
-          onChange={(e) => setRestaurantData({ ...restaurantData, description: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent h-24 resize-none"
-        />
+        <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
       </div>
 
       <div className="mt-4 flex flex-row justify-between self-center">
@@ -598,8 +600,11 @@ export default function BusinessRegisterPage() {
         </div>
         <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-white p-8">
           <div className="w-full max-w-md">
+            <Link href="/">
+              <img src="/logo-e.png" alt="Logo" className="mx-auto" />
+            </Link>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-[#FC8842]">Liên kết với E-Restaurant!</h1>
+              <h1 className="text-3xl font-bold text-[#FC8842]">Liên kết với chúng tôi!</h1>
             </div>
 
             {error && <div className="px-4 py-1 bg-red-100 text-red-800 rounded mb-4">{error}</div>}
