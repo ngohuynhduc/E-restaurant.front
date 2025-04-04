@@ -2,14 +2,23 @@
 
 import { useSession } from "next-auth/react";
 import businessReg from "@/assets/img/business.jpg";
-import { useEffect, useRef, useState } from "react";
-import _ from "lodash";
+import { useCallback, useEffect, useRef, useState } from "react";
+import _, { add, debounce } from "lodash";
 import { uploadMultipleImage } from "@/services/uploadImageService";
 import { Button } from "@/components/ui/button";
-import { Asterisk, ChevronLeft, SquareX } from "lucide-react";
+import { Asterisk, ChevronLeft, CircleCheckBig, Loader, SquareX } from "lucide-react";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ButtonInteract } from "@/components/ui/interactButton";
 
 export default function BusinessRegisterPage() {
   const { data: session, status } = useSession();
@@ -29,7 +38,22 @@ export default function BusinessRegisterPage() {
     menu_image: [],
     restaurant_image: [],
     tables: {},
+    category: [],
+    price_min: 0,
+    price_max: 0,
+    open_time: {
+      day: [],
+      lunch: {
+        start: "",
+        end: "",
+      },
+      dinner: {
+        start: "",
+        end: "",
+      },
+    },
   });
+  console.log("🚀 ~ BusinessRegisterPage ~ restaurantData:", restaurantData);
   const isLogin = status === "authenticated" && !_.isEmpty(session);
 
   const [error, setError] = useState("");
@@ -46,6 +70,11 @@ export default function BusinessRegisterPage() {
     table4: 0,
     table6: 0,
   });
+  const [results, setResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isTypingAddress, setIsTypingAddress] = useState(false);
+  const [isOpenComplelte, setIsOpenComplelte] = useState(false);
+
   const menuImageRef = useRef(null);
   const restaurantImageRef = useRef(null);
   const router = useRouter();
@@ -101,7 +130,7 @@ export default function BusinessRegisterPage() {
 
       if (result?.ok && response?.message) {
         //MOCK
-        router.push("/");
+        setIsOpenComplelte(true);
       }
       console.log("🚀 ~ handleSubmit ~ result:", response);
     } catch (errors) {
@@ -185,6 +214,44 @@ export default function BusinessRegisterPage() {
       ...prev,
       restaurant_image: prev?.restaurant_image?.filter((item) => item?.public_id !== id),
     }));
+  };
+
+  const fetchResults = async (searchText) => {
+    const searchParams = encodeURIComponent(searchText);
+    const autoCompleteUrl = `${process.env.NEXT_PUBLIC_GEOAPIFY_API_URL}?text=${searchParams}&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`;
+    const autoCompleteResponse = await fetch(autoCompleteUrl);
+    const autoCompleteData = await autoCompleteResponse.json();
+    const results = autoCompleteData?.features?.map((item) => ({
+      address: item?.properties?.formatted,
+      coordinate: item?.geometry?.coordinates?.toString(),
+    }));
+
+    setResults(results);
+    setShowResults(true);
+  };
+
+  const debouncedFetch = useCallback(debounce(fetchResults, 2000), []);
+
+  const handleChangeAddress = (e) => {
+    const value = e.target.value;
+    setIsTypingAddress(true);
+    setRestaurantData({ ...restaurantData, address: value });
+    if (value.trim()) {
+      debouncedFetch(value);
+    }
+    setResults([]);
+    setShowResults(false);
+  };
+
+  const handleSelectAddress = (selectedValue) => {
+    setRestaurantData({
+      ...restaurantData,
+      address: selectedValue?.address,
+      coordinate: selectedValue?.coordinate,
+    });
+    setResults([]);
+    setIsTypingAddress(false);
+    setShowResults(false);
   };
 
   const renderStep1 = () => (
@@ -326,7 +393,7 @@ export default function BusinessRegisterPage() {
         />
       </div>
 
-      <div className="mt-4">
+      <div className="relative mt-4">
         <label htmlFor="restaurant-address" className="flex text-sm font-bold text-gray-700 mb-1">
           Địa chỉ nhà hàng
           <span>
@@ -337,27 +404,44 @@ export default function BusinessRegisterPage() {
           type="text"
           id="restaurant-address"
           value={restaurantData.address}
-          onChange={(e) => setRestaurantData({ ...restaurantData, address: e.target.value })}
+          onChange={handleChangeAddress}
           required
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
         />
+        {isTypingAddress && !showResults && (
+          <div className="absolute left-0 flex justify-center w-full mt-1 bg-white border rounded h-[50px] overflow-y-auto shadow-md border-[#FC8842] px-[12px]">
+            <img src="/loadingInline.svg" alt="loading" />
+          </div>
+        )}
+        {showResults && results.length > 0 && (
+          <ul className="absolute left-0 w-full mt-1 bg-white border rounded max-h-[200px] overflow-y-auto shadow-md border-[#FC8842] px-[12px]">
+            {results.map((item, index) => (
+              <li
+                key={index}
+                className={`${
+                  index ? "border-t border-t-gray-300" : ""
+                } p-2 cursor-pointer hover:bg-gray-200`}
+                onClick={() => handleSelectAddress(item)}
+              >
+                {item?.address}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="mt-4">
-        <label
-          htmlFor="restaurant-coordinates"
-          className="flex text-sm font-bold text-gray-700 mb-1"
-        >
-          Tọa độ
+        <label htmlFor="restaurant-category" className="flex text-sm font-bold text-gray-700 mb-1">
+          Loại nhà hàng
           <span>
             <Asterisk size={16} color="#ff0000" strokeWidth={1} />
           </span>
         </label>
         <input
           type="text"
-          id="restaurant-coordinates"
-          value={restaurantData.coordinate}
-          onChange={(e) => setRestaurantData({ ...restaurantData, coordinate: e.target.value })}
+          id="restaurant-category"
+          value={restaurantData.hotline}
+          onChange={(e) => setRestaurantData({ ...restaurantData, hotline: e.target.value })}
           required
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
         />
@@ -398,16 +482,18 @@ export default function BusinessRegisterPage() {
 
       <div className="flex justify-between mt-6">
         <button
+          disabled={isTypingAddress}
           type="button"
           onClick={() => setCurrentStep(1)}
-          className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-300 font-bold cursor-pointer"
+          className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-300 font-bold cursor-pointer disabled:bg-gray-300 disabled:text-gray-700"
         >
           Quay lại
         </button>
         <button
+          disabled={isTypingAddress}
           type="button"
           onClick={() => setCurrentStep(3)}
-          className="bg-[#FC8842] text-white py-2 px-6 rounded-md hover:bg-[#e67a35] transition-colors duration-300 font-bold cursor-pointer"
+          className="bg-[#FC8842] text-white py-2 px-6 rounded-md hover:bg-[#e67a35] transition-colors duration-300 font-bold cursor-pointer disabled:bg-gray-300 disabled:text-gray-700"
         >
           Tiếp tục
         </button>
@@ -420,7 +506,145 @@ export default function BusinessRegisterPage() {
       <div className="flex items-center mb-4">
         <button
           type="button"
+          onClick={() => setCurrentStep(1)}
+          className="mr-4 text-gray-600 hover:text-[#FC8842] cursor-pointer"
+        >
+          <ChevronLeft />
+        </button>
+        <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
+      </div>
+
+      <div>
+        <label htmlFor="restaurant-name" className="flex text-sm font-bold text-gray-700 mb-1">
+          Th
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
+        </label>
+        <input
+          type="text"
+          id="restaurant-name"
+          value={restaurantData.name}
+          onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
+        />
+      </div>
+
+      <div className="relative mt-4">
+        <label htmlFor="restaurant-address" className="flex text-sm font-bold text-gray-700 mb-1">
+          Địa chỉ nhà hàng
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
+        </label>
+        <input
+          type="text"
+          id="restaurant-address"
+          value={restaurantData.address}
+          onChange={handleChangeAddress}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
+        />
+        {isTypingAddress && !showResults && (
+          <div className="absolute left-0 flex justify-center w-full mt-1 bg-white border rounded h-[50px] overflow-y-auto shadow-md border-[#FC8842] px-[12px]">
+            <img src="/loadingInline.svg" alt="loading" />
+          </div>
+        )}
+        {showResults && results.length > 0 && (
+          <ul className="absolute left-0 w-full mt-1 bg-white border rounded max-h-[200px] overflow-y-auto shadow-md border-[#FC8842] px-[12px]">
+            {results.map((item, index) => (
+              <li
+                key={index}
+                className={`${
+                  index ? "border-t border-t-gray-300" : ""
+                } p-2 cursor-pointer hover:bg-gray-200`}
+                onClick={() => handleSelectAddress(item)}
+              >
+                {item?.address}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="restaurant-category" className="flex text-sm font-bold text-gray-700 mb-1">
+          Loại nhà hàng
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
+        </label>
+        <input
+          type="text"
+          id="restaurant-category"
+          value={restaurantData.hotline}
+          onChange={(e) => setRestaurantData({ ...restaurantData, hotline: e.target.value })}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
+        />
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="restaurant-hotline" className="flex text-sm font-bold text-gray-700 mb-1">
+          Hotline
+          <span>
+            <Asterisk size={16} color="#ff0000" strokeWidth={1} />
+          </span>
+        </label>
+        <input
+          type="tel"
+          id="restaurant-hotline"
+          value={restaurantData.hotline}
+          onChange={(e) => setRestaurantData({ ...restaurantData, hotline: e.target.value })}
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="restaurant-description"
+          className="flex text-sm font-bold text-gray-700 mb-1"
+        >
+          Mô tả nhà hàng
+        </label>
+        <textarea
+          name="restaurant-description"
+          id="restaurant-description"
+          value={restaurantData.description}
+          onChange={(e) => setRestaurantData({ ...restaurantData, description: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FC8842] focus:border-transparent h-24 resize-none"
+        />
+      </div>
+
+      <div className="flex justify-between mt-6">
+        <button
+          disabled={isTypingAddress}
+          type="button"
           onClick={() => setCurrentStep(2)}
+          className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-300 font-bold cursor-pointer disabled:bg-gray-300 disabled:text-gray-700"
+        >
+          Quay lại
+        </button>
+        <button
+          disabled={isTypingAddress}
+          type="button"
+          onClick={() => setCurrentStep(4)}
+          className="bg-[#FC8842] text-white py-2 px-6 rounded-md hover:bg-[#e67a35] transition-colors duration-300 font-bold cursor-pointer disabled:bg-gray-300 disabled:text-gray-700"
+        >
+          Tiếp tục
+        </button>
+      </div>
+    </>
+  );
+
+  const renderStep4 = () => (
+    <>
+      <div className="flex items-center mb-4">
+        <button
+          type="button"
+          onClick={() => setCurrentStep(3)}
           className="mr-4 text-gray-600 hover:text-[#FC8842] cursor-pointer"
         >
           <ChevronLeft />
@@ -462,7 +686,7 @@ export default function BusinessRegisterPage() {
       </div>
       {!_.isEmpty(restaurantData?.menu_image) && (
         <div className="flex flex-row gap-[10px]">
-          {restaurantData?.menu_image.map((image, index) => (
+          {restaurantData?.menu_image?.map((image, index) => (
             <div key={index} className="relative w-20 h-20">
               <span
                 className="absolute top-0 right-0 bg-gray-500 cursor-pointer"
@@ -511,7 +735,7 @@ export default function BusinessRegisterPage() {
       </div>
       {!_.isEmpty(restaurantData?.restaurant_image) && (
         <div className="flex flex-row gap-[10px]">
-          {restaurantData?.restaurant_image.map((image, index) => (
+          {restaurantData?.restaurant_image?.map((image, index) => (
             <div key={index} className="relative w-20 h-20">
               <span
                 className="absolute top-0 right-0 bg-gray-500 cursor-pointer"
@@ -613,9 +837,23 @@ export default function BusinessRegisterPage() {
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}
+              {currentStep === 4 && renderStep4()}
             </form>
           </div>
         </div>
+        <Dialog open={isOpenComplelte}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Đăng kí nhà hàng thành công</DialogTitle>
+              <DialogDescription className="mt-[40px] flex flex-col items-center">
+                <CircleCheckBig size={128} color="green" />
+                <ButtonInteract className="mt-4" onClick={() => router.push("/auth/login")}>
+                  Đăng nhập ngay
+                </ButtonInteract>
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

@@ -8,6 +8,6 @@ export async function GET(req) {
     console.log("🚀 ~ GET ~ response:", response);
     return NextResponse.json(response);
   } catch (error) {
-    return NextResponse.json({ message: "Failed get restaurants" }, { status: 500 });
+    throw new Error(500);
   }
 }

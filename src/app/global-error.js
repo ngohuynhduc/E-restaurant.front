@@ -11,6 +11,7 @@ export default function GlobalError({ error }) {
   }, [error]);
 
   const status = parseInt(error.message.match(/\d+/)?.[0], 10) || 500;
+  console.log("🚀 ~ GlobalError ~ status:", status);
 
   return (
     <html>
@@ -19,6 +20,7 @@ export default function GlobalError({ error }) {
         {status === 401 && <Error401 />}
         {status === 404 && <Error404 />}
         {status === 500 && <Error500 />}
+        {!status && <Error500 />}
       </body>
     </html>
   );

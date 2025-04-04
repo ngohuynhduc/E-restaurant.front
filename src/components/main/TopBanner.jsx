@@ -15,10 +15,14 @@ export const TopBanner = () => {
 
   useEffect(() => {
     const fetchNewestRestaurants = async () => {
-      const response = await fetch("/api/restaurants/newest");
-      const data = await response.json();
-      setRestaurants(data?.data);
-      console.log("🚀 ~ useEffect ~ response:", data);
+      try {
+        const response = await fetch("/api/restaurants/newest");
+        const data = await response.json();
+        setRestaurants(data?.data);
+        console.log("🚀 ~ useEffect ~ response:", data);
+      } catch (error) {
+        throw new Error("500");
+      }
     };
     fetchNewestRestaurants();
   }, []);
@@ -36,7 +40,7 @@ export const TopBanner = () => {
         loop={true}
         navigation={true}
       >
-        {restaurants.map((item, index) => (
+        {restaurants?.map((item, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
             {({ isActive }) => (
               <div

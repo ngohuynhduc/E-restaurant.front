@@ -108,7 +108,7 @@ export const Header = () => {
 
           {/* Menu Items */}
           <nav className="flex items-center space-x-6">
-            {menu.map((item) => (
+            {menu?.map((item) => (
               <div key={item.name} className="relative group">
                 {item.subMenu ? (
                   <Link
@@ -141,7 +141,7 @@ export const Header = () => {
                     onMouseLeave={() => setOpenSubMenu(null)}
                   >
                     <div className="py-1">
-                      {item.subMenu.map((subItem) => (
+                      {item.subMenu?.map((subItem) => (
                         <Link
                           key={subItem.name}
                           href={subItem.href}
