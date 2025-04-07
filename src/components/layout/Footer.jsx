@@ -1,4 +1,15 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 export const Footer = () => {
+  const excludeUrl = ["/auth/login", "/auth/register", "/auth/business-register"];
+  const pathName = usePathname();
+
+  if (excludeUrl.includes(pathName)) {
+    return null;
+  }
+
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
       <div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">

@@ -8,6 +8,8 @@ import "swiper/css/pagination";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
+import _ from "lodash";
 
 export const TopBanner = () => {
   const swiperRef = useRef(null);
@@ -19,7 +21,6 @@ export const TopBanner = () => {
         const response = await fetch("/api/restaurants/newest");
         const data = await response.json();
         setRestaurants(data?.data);
-        console.log("🚀 ~ useEffect ~ response:", data);
       } catch (error) {
         throw new Error("500");
       }
@@ -27,7 +28,20 @@ export const TopBanner = () => {
     fetchNewestRestaurants();
   }, []);
 
-  return (
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (swiperRef?.current) {
+  //       console.log("🚀 ~ timer ~ swiperRef?.current:", swiperRef?.current);
+  //       swiperRef?.current?.update();
+  //     }
+  //   }, 5000);
+
+  //   return () => clearTimeout(timer);
+  // }, []);
+
+  return _.isEmpty(restaurants) ? (
+    <Skeleton className="w-full h-[calc(100dvh-80px)]" />
+  ) : (
     <div className="relative w-full h-[calc(100dvh-80px)]">
       <Swiper
         autoplay={{ delay: 5000 }}
@@ -39,6 +53,8 @@ export const TopBanner = () => {
         className="w-full h-full"
         loop={true}
         navigation={true}
+        observer={true}
+        observeParents={true}
       >
         {restaurants?.map((item, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
@@ -117,7 +133,7 @@ export const TopBanner = () => {
                       },
                     }}
                     whileTap={{ scale: 0.85 }}
-                    className="px-4 py-2 text-sm text-[16px] bg-[#FF9C00] rounded-md border-[2px]hover:bg-[#860001] text-white cursor-pointer"
+                    className="px-4 py-2 text-sm text-[16px] bg-[#FF9C00] rounded-md border-[2px] hover:bg-[#860001] text-white cursor-pointer"
                     onMouseEnter={() => swiperRef.current?.swiper.autoplay.stop()}
                     onMouseLeave={() => swiperRef.current?.swiper.autoplay.start()}
                   >

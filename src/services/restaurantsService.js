@@ -17,6 +17,12 @@ export class RestaurantService {
     };
   }
 
+  async getCategories() {
+    const headers = await this.buildHeader();
+    const response = await BaseService.get("/restaurant/categories", headers);
+    return response;
+  }
+
   async getNewestRestaurant() {
     const headers = await this.buildHeader();
     const response = await BaseService.get("/restaurant/newest", headers);

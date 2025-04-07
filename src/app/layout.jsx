@@ -4,6 +4,7 @@ import { AuthProvider } from "./provider";
 import { Header } from "@/components/layout/Header";
 import { UserProvider } from "./UserProvider";
 import { Footer } from "@/components/layout/Footer";
+import PageLoading from "@/components/loading/PageLoading";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({ children }) {
       >
         <AuthProvider>
           <UserProvider>
+            <PageLoading />
             <Header />
             {children}
             <Footer />
