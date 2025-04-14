@@ -12,11 +12,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function CategoryMultiDropdown({ categories, setRestaurantData }) {
+export default function CategoryMultiDropdown({
+  categories,
+  setRestaurantData,
+  selectedCategories,
+  setSelectedCategories,
+}) {
   console.log("🚀 ~ CategoryMultiDropdown ~ categories:", categories);
   const [open, setOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  console.log("🚀 ~ CategoryMultiDropdown ~ selectedCategories:", selectedCategories);
 
   useEffect(() => {
     setRestaurantData((prev) => ({
@@ -77,7 +80,7 @@ export default function CategoryMultiDropdown({ categories, setRestaurantData })
           <Command>
             <CommandInput placeholder="Tìm kiếm danh mục..." />
             <CommandEmpty>Không tìm thấy danh mục.</CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className="max-h-[300px] overflow-y-auto">
               {categories?.map((category) => (
                 <CommandItem
                   key={category.id}

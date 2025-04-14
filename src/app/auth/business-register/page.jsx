@@ -16,18 +16,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ButtonInteract } from "@/components/ui/interactButton";
 import { DAYS, HOURS } from "@/app/shared/const";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -37,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, isTrulyEmpty } from "@/lib/utils";
 import CategoryMultiDropdown from "@/components/auth/CategoryDropdown";
 
 export default function BusinessRegisterPage() {
@@ -58,14 +51,15 @@ export default function BusinessRegisterPage() {
     menu_image: [],
     restaurant_image: [],
     tables: {},
-    category: [],
     price_min: "",
     price_max: "",
+    categories: [],
   });
   const isLogin = status === "authenticated" && !_.isEmpty(session);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  console.log("🚀 ~ BusinessRegisterPage ~ loading:", loading);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTables, setSelectedTables] = useState({
@@ -90,6 +84,7 @@ export default function BusinessRegisterPage() {
   const [open, setOpen] = useState(false);
   const [displayDays, setDisplayDays] = useState("");
   const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const menuImageRef = useRef(null);
   const restaurantImageRef = useRef(null);
@@ -105,6 +100,10 @@ export default function BusinessRegisterPage() {
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    setError("");
+  }, [selectedTables, restaurantData, openTimeData]);
   console.log("🚀 ~ fetchCategories ~ categoriesData:", categories);
 
   useEffect(() => {
@@ -133,21 +132,17 @@ export default function BusinessRegisterPage() {
     }
   }, [openTimeData.days]);
 
-  // Xử lý thay đổi khi chọn/bỏ chọn ngày
   const handleDayChange = (day) => {
     setOpenTimeData((prev) => {
       const selected = prev.days.includes(day);
       let newDays;
 
       if (selected) {
-        // Nếu đã chọn thì bỏ chọn
         newDays = prev.days.filter((d) => d !== day);
       } else {
-        // Nếu chưa chọn thì thêm vào
         newDays = [...prev.days, day];
       }
 
-      // Xóa lỗi nếu đã chọn ít nhất một ngày
       if (newDays.length > 0 && error) {
         setError("");
       }
@@ -159,7 +154,6 @@ export default function BusinessRegisterPage() {
     });
   };
 
-  // Chọn tất cả hoặc bỏ chọn tất cả
   const handleSelectAllDays = (selectAll) => {
     setOpenTimeData({
       ...openTimeData,
@@ -167,31 +161,28 @@ export default function BusinessRegisterPage() {
     });
   };
 
-  // Xử lý thay đổi giờ trưa
   const handleLunchHoursChange = (field, value) => {
     const newLunchHours = { ...openTimeData.lunchHours, [field]: value };
+    const checkValidate = validateLunchHours(newLunchHours);
+    if (!checkValidate) return;
+
     setOpenTimeData({
       ...openTimeData,
       lunchHours: newLunchHours,
     });
-
-    // Kiểm tra và xóa lỗi nếu đã hợp lệ
-    validateLunchHours(newLunchHours);
   };
 
-  // Xử lý thay đổi giờ tối
   const handleDinnerHoursChange = (field, value) => {
     const newDinnerHours = { ...openTimeData.dinnerHours, [field]: value };
+    const checkValidate = validateDinnerHours(newDinnerHours);
+    if (!checkValidate) return;
+
     setOpenTimeData({
       ...openTimeData,
       dinnerHours: newDinnerHours,
     });
-
-    // Kiểm tra và xóa lỗi nếu đã hợp lệ
-    validateDinnerHours(newDinnerHours);
   };
 
-  // Hàm validate giờ trưa
   const validateLunchHours = (lunchHours) => {
     const from = parseInt(lunchHours.from.split(":")[0]);
     const to = parseInt(lunchHours.to.split(":")[0]);
@@ -201,16 +192,15 @@ export default function BusinessRegisterPage() {
       return false;
     }
 
-    // Xóa lỗi nếu đã hợp lệ
     setError("");
 
-    // Validate lại giờ tối vì có thể bị ảnh hưởng khi thay đổi giờ trưa
-    validateDinnerHours(openTimeData.dinnerHours, lunchHours);
+    const checkValidate = validateDinnerHours(openTimeData.dinnerHours, lunchHours);
+
+    if (!checkValidate) return false;
 
     return true;
   };
 
-  // Hàm validate giờ tối
   const validateDinnerHours = (dinnerHours, lunchHours = openTimeData.lunchHours) => {
     const lunchTo = parseInt(lunchHours.to.split(":")[0]);
     const dinnerFrom = parseInt(dinnerHours.from.split(":")[0]);
@@ -249,32 +239,42 @@ export default function BusinessRegisterPage() {
     const requiredCheck = Object.entries(submitValue).some(([key, value]) => {
       const loggedinNotRequireField = ["password", "confirm_password", "phone", "description"];
       if (isLogin) {
-        return !loggedinNotRequireField.includes(key) && _.isEmpty(value);
+        return !loggedinNotRequireField.includes(key) && isTrulyEmpty(value);
       }
-      if (_.isEmpty(openTimeData.days)) return true;
-      return key !== "description" && _.isEmpty(value);
+      return key !== "description" && isTrulyEmpty(value);
     });
 
     if (requiredCheck) {
       setError("Nhập đủ các thông tin bắt buộc.");
       return;
     }
+
+    if (_.isEmpty(openTimeData.days)) {
+      setError("Chưa chọn ngày mở cửa");
+      return;
+    }
+
+    if (submitValue.price_min >= submitValue.price_max) {
+      setError("Nhập sai khoảng giá!");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      // const result = await fetch("/api/auth/business-register", {
-      //   method: "POST",
-      //   body: JSON.stringify(submitValue),
-      // });
-      // const response = await result.json();
-      // if (!result.ok && response?.message) {
-      //   setError(response.message);
-      // }
-      // if (result?.ok && response?.message) {
-      //   setIsOpenComplelte(true);
-      // }
-      // console.log("🚀 ~ handleSubmit ~ result:", response);
+      const result = await fetch("/api/auth/business-register", {
+        method: "POST",
+        body: JSON.stringify(submitValue),
+      });
+      const response = await result.json();
+      if (!result.ok && response?.message) {
+        setError(response.message);
+      }
+      if (result?.ok && response?.message) {
+        setIsOpenComplelte(true);
+      }
+      console.log("🚀 ~ handleSubmit ~ result:", response);
     } catch (errors) {
       setError(errors?.message);
       console.log("🚀 ~ handleSubmit ~ errors:", errors);
@@ -662,7 +662,12 @@ export default function BusinessRegisterPage() {
             <Asterisk size={16} color="#ff0000" strokeWidth={1} />
           </span>
         </label>
-        <CategoryMultiDropdown categories={categories} setRestaurantData={setRestaurantData} />
+        <CategoryMultiDropdown
+          categories={categories}
+          setRestaurantData={setRestaurantData}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+        />
       </div>
 
       <div className="relative mt-4">

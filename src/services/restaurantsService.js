@@ -28,4 +28,16 @@ export class RestaurantService {
     const response = await BaseService.get("/restaurant/newest", headers);
     return response;
   }
+
+  async getRestaurantById(id) {
+    const headers = await this.buildHeader();
+    const response = await BaseService.get(`/restaurant/${id}`, headers);
+    return response;
+  }
+
+  async getListRestaurant(params) {
+    const headers = await this.buildHeader();
+    const response = await BaseService.get(`/restaurant/restaurants?${params}`, headers);
+    return response;
+  }
 }

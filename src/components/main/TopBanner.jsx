@@ -10,10 +10,13 @@ import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import _ from "lodash";
+import { useRouter } from "next/navigation";
 
 export const TopBanner = () => {
   const swiperRef = useRef(null);
   const [restaurants, setRestaurants] = useState([]);
+  const router = useRouter();
+  console.log("🚀 ~ TopBanner ~ restaurants:", restaurants);
 
   useEffect(() => {
     const fetchNewestRestaurants = async () => {
@@ -28,16 +31,9 @@ export const TopBanner = () => {
     fetchNewestRestaurants();
   }, []);
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     if (swiperRef?.current) {
-  //       console.log("🚀 ~ timer ~ swiperRef?.current:", swiperRef?.current);
-  //       swiperRef?.current?.update();
-  //     }
-  //   }, 5000);
-
-  //   return () => clearTimeout(timer);
-  // }, []);
+  const handleGoToDetail = (id) => {
+    router.push(`/restaurants/${id}`);
+  };
 
   return _.isEmpty(restaurants) ? (
     <Skeleton className="w-full h-[calc(100dvh-80px)]" />
@@ -95,7 +91,7 @@ export const TopBanner = () => {
                     }}
                     initial="hidden"
                     animate="visible"
-                    className="text-white text-lg"
+                    className="text-white text-lg text-center line-clamp-2"
                   >
                     {item?.description}
                   </motion.p>
@@ -133,11 +129,13 @@ export const TopBanner = () => {
                       },
                     }}
                     whileTap={{ scale: 0.85 }}
+                    whileHover={{ scale: 1.05 }}
                     className="px-4 py-2 text-sm text-[16px] bg-[#FF9C00] rounded-md border-[2px] hover:bg-[#860001] text-white cursor-pointer"
                     onMouseEnter={() => swiperRef.current?.swiper.autoplay.stop()}
                     onMouseLeave={() => swiperRef.current?.swiper.autoplay.start()}
+                    onClick={() => handleGoToDetail(item?.id)}
                   >
-                    Order Now
+                    Đặt bàn ngay
                   </motion.button>
                 </div>
               </div>

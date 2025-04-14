@@ -5,7 +5,6 @@ export async function GET(req) {
   try {
     const restaurantsService = new RestaurantService();
     const response = await restaurantsService.getCategories();
-    console.log("🚀 ~ GET ~ response:", response);
     return NextResponse.json(response);
   } catch (error) {
     throw new Error(500);

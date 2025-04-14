@@ -13,9 +13,10 @@ export class BaseService {
     }
 
     try {
+      console.log("🚀 ~ BaseService ~ request ~ data:", endpoint);
       const response = await fetch(`${this.baseURL}${endpoint}`, options);
+      console.log("🚀 ~ BaseService ~ request ~ response:", response);
       const data = await response.json();
-      console.log("🚀 ~ BaseService ~ request ~ data:", data);
       if (!response.ok) {
         throw new Error(data.status || "Something went wrong");
       }

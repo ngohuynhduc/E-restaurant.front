@@ -2,14 +2,16 @@
 
 import { ROLES } from "@/app/shared/const";
 import { useUserStore } from "@/store/useUserStore";
+import { useCategoriesStore } from "@/store/useRestaurantStore";
 import { ChevronDown, Search, UserRound } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const menu = [
   {
+    id: "restaurants",
     name: "Nhà Hàng",
     href: "/restaurants",
     subMenu: [
@@ -20,6 +22,7 @@ const menu = [
     ],
   },
   {
+    id: "contact",
     name: "Liên Hệ",
     href: "/contact",
     subMenu: [
@@ -29,16 +32,21 @@ const menu = [
       },
     ],
   },
-  { name: "Tin Tức", href: "/news" },
+  { id: "news", name: "Tin Tức", href: "/news" },
 ];
 
 const excludeUrl = ["/auth/login", "/auth/register", "/auth/business-register"];
 
 export const Header = () => {
   const user = useUserStore((state) => state.user);
+  const categories = useCategoriesStore((state) => state.categories);
+  const router = useRouter();
+  console.log("🚀 ~ Header ~ categories:", categories);
   const [openMenuUser, setIsOpenMenuUser] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
   const userMenuRef = useRef();
+  const subMenuRef = useRef();
 
   const { data: session, status } = useSession();
   console.log("🚀 ~ Header ~ session:", status);
@@ -49,13 +57,20 @@ export const Header = () => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsOpenMenuUser(false);
       }
+      if (subMenuRef.current && !subMenuRef.current.contains(event.target)) {
+        setOpenSubMenu(null);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [userMenuRef]);
+  }, [userMenuRef, subMenuRef]);
+
+  useEffect(() => {
+    setSearchValue("");
+  }, [pathname]);
 
   const handleLogout = async () => {
     if (session?.accessToken) {
@@ -85,10 +100,47 @@ export const Header = () => {
     return null;
   }
 
+  const renderSubMenu = (id, subMenu) => {
+    const categoriesData = categories.map((category) => ({
+      ...category,
+      href: `/restaurants?categoryId=${category.id}`,
+    }));
+
+    const subMenuData = id === "restaurants" ? categoriesData : subMenu;
+    return (
+      <div
+        ref={subMenuRef}
+        className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-[#860001] ring-opacity-5 z-10"
+        onMouseLeave={() => setOpenSubMenu(null)}
+      >
+        <div className="py-1">
+          {subMenuData.map((subItem) => (
+            <Link
+              key={subItem.name}
+              href={subItem.href}
+              className="block px-4 py-2 text-sm text-[#1A1A1A] hover:bg-gray-100 hover:text-[#860001]"
+            >
+              {subItem.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const handleRedirectSearch = (e) => {
+    if (e.key === "Enter") {
+      const searchTerm = e.target.value.trim();
+      if (searchTerm) {
+        router.push(`/restaurants?q=${searchTerm}`);
+      }
+    }
+  };
+
   return (
     <header className="sticky h-[80px] top-0 z-[999] bg-[#FF9C00] shadow-md">
       <div className="container mx-auto h-full w-full">
-        <div className="flex items-center gap-[100px] justify-between py-[8px] h-full">
+        <div className="flex items-center gap-[50px] justify-between py-[8px] h-full">
           <div className="flex items-center">
             <Link href="/" className="h-[80px] flex items-center text-left">
               <img src="/logo-e.png" alt="Logo" className="h-[80px]" />
@@ -97,8 +149,11 @@ export const Header = () => {
           <div className="relative mr-6 w-[400px]">
             <input
               type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Tìm kiếm nhà hàng..."
               className="pl-10 pr-4 py-2 rounded-full border text-[#F2F2F2] border-[#F2F2F2] focus:outline-none focus:ring-2 focus:ring-[#F2F2F2] focus:border-transparent placeholder-gray-50 w-[400px] transition-all duration-500"
+              onKeyDown={(e) => handleRedirectSearch(e)}
             />
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#F2F2F2]"
@@ -109,7 +164,7 @@ export const Header = () => {
           {/* Menu Items */}
           <nav className="flex items-center space-x-6">
             {menu?.map((item) => (
-              <div key={item.name} className="relative group">
+              <div key={item.name} className="relative group whitespace-nowrap">
                 {item.subMenu ? (
                   <Link
                     href={item.href}
@@ -135,31 +190,16 @@ export const Header = () => {
                 )}
 
                 {/* Dropdown for submenus */}
-                {item.subMenu && openSubMenu === item.name && (
-                  <div
-                    className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-[#860001] ring-opacity-5 z-10"
-                    onMouseLeave={() => setOpenSubMenu(null)}
-                  >
-                    <div className="py-1">
-                      {item.subMenu?.map((subItem) => (
-                        <Link
-                          key={subItem.name}
-                          href={subItem.href}
-                          className="block px-4 py-2 text-sm text-[#1A1A1A] hover:bg-gray-100 hover:text-[#860001]"
-                        >
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {item.subMenu && openSubMenu === item.name && renderSubMenu(item.id, item.subMenu)}
               </div>
             ))}
           </nav>
           <div className="relative flex items-center h-full  justify-end cursor-pointer">
             {user ? (
               <div className="flex items-center gap-[8px]" onClick={handleOpenUserMenu}>
-                <div className="text-[16px] text-[#1A1A1A] font-semibold">{user?.full_name}</div>
+                <div className="text-[16px] text-[#1A1A1A] font-semibold line-clamp-1">
+                  {user?.full_name}
+                </div>
                 <div>
                   <UserRound size={24} color="#860001" />
                 </div>

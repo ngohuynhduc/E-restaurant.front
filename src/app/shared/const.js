@@ -20,3 +20,9 @@ export const HOURS = Array.from({ length: 24 }, (_, i) => {
   const hour = i.toString().padStart(2, "0");
   return { value: `${hour}:00`, label: `${hour}:00` };
 });
+
+export const SORT_OPTIONS = [
+  { value: "newest", label: "Mới nhất" },
+  { value: "rating", label: "Đánh giá" },
+  { value: "nearby", label: "Gần tôi" },
+];
