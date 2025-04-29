@@ -30,7 +30,6 @@ export async function GET(req) {
     const query = new URLSearchParams(paramsPick).toString();
     const restaurantsService = new RestaurantService();
     const response = await restaurantsService.getListRestaurant(query);
-    console.log("🚀 ~ GET ~ test:", response);
     return NextResponse.json(response?.data);
   } catch (error) {
     throw new Error(500);

@@ -1,3 +1,5 @@
+import { ErrorsStatus } from "@/app/shared/errorsStatus";
+
 export class BaseService {
   static baseURL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -6,18 +8,19 @@ export class BaseService {
       method,
       headers,
     };
-    console.log("🚀 ~ BaseService ~ request ~ options:", options);
 
     if (body) {
       options.body = JSON.stringify(body);
     }
 
     try {
-      console.log("🚀 ~ BaseService ~ request ~ data:", endpoint);
       const response = await fetch(`${this.baseURL}${endpoint}`, options);
-      console.log("🚀 ~ BaseService ~ request ~ response:", response);
       const data = await response.json();
+      console.log("🚀 ~ BaseService ~ request ~ data:", data);
       if (!response.ok) {
+        if (data?.status === ErrorsStatus.Unauthorized && data?.message === "Token expired") {
+          throw new Error(data?.message);
+        }
         throw new Error(data.status || "Something went wrong");
       }
       return data;

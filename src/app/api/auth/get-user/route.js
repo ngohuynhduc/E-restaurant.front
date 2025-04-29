@@ -13,6 +13,9 @@ export async function GET(req) {
       return NextResponse.json(response);
     }
   } catch (error) {
-    return NextResponse.json({ message: "Failed get user" }, { status: 500 });
+    if (error?.message === "Token expired") {
+      return NextResponse.json({ message: "Token expired" }, { status: 401 });
+    }
+    throw NextResponse.json({ message: "Failed get user" }, { status: 500 });
   }
 }

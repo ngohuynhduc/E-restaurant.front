@@ -84,7 +84,6 @@ export async function POST(req) {
       headers: buildHeader,
     });
     const data = await res.json();
-    console.log("🚀 ~ POST ~ data:", data);
 
     if (data?.status === ErrorsStatus.Created) {
       return NextResponse.json({ message: "Đăng ký thành công" }, { status: data?.status });
@@ -92,7 +91,6 @@ export async function POST(req) {
       return NextResponse.json({ message: data?.message }, { status: data?.status });
     }
   } catch (error) {
-    console.log("🚀 ~ POST ~ error:", error);
     return NextResponse.json(
       { message: "Có lỗi xảy ra. Vui lòng thử lại sau" },
       { status: ErrorsStatus.Internal_Server_Error }

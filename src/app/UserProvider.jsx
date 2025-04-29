@@ -2,15 +2,15 @@
 
 import { useUserStore } from "@/store/useUserStore";
 import { useCategoriesStore } from "@/store/useRestaurantStore";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { ErrorsStatus } from "./shared/errorsStatus";
 
 export const UserProvider = ({ children }) => {
   const setUser = useUserStore((state) => state.setUser);
   const setCategories = useCategoriesStore((state) => state.setCategories);
   const { status } = useSession();
-  console.log("🚀 ~ UserProvider ~ status:", status);
   const pathname = usePathname(); //
 
   useEffect(() => {
@@ -18,8 +18,15 @@ export const UserProvider = ({ children }) => {
       if (status === "authenticated") {
         const response = await fetch("/api/auth/get-user");
         const userInfo = await response.json();
-        console.log("🚀 ~ fetchUser ~ userInfo:", userInfo);
-
+        if (
+          !response.ok &&
+          response.status === ErrorsStatus.Unauthorized &&
+          userInfo?.message === "Token expired"
+        ) {
+          setUser(null);
+          signOut({ callbackUrl: "/" });
+          return;
+        }
         setUser(userInfo?.data);
       } else {
         setUser(null);

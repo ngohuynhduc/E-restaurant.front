@@ -1,11 +1,15 @@
 "use client";
 
+import { Breadcrumbs } from "@/components/layout/BreadCrumbs";
+import { RestaurantDetail } from "@/components/restaurant/RestaurantDetail";
+import FullScreenLoader from "@/components/ui/FullScreenLoader";
 import _, { set } from "lodash";
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function RestaurantDetailPage() {
   const [restaurant, setRestaurant] = useState({});
+  console.log("🚀 ~ RestaurantDetailPage ~ restaurant:", restaurant);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const params = useParams();
@@ -22,8 +26,7 @@ export default function RestaurantDetailPage() {
           setNotFound(true);
         }
         const data = await res.json();
-        console.log("🚀 ~ fetchRestaurantDetail ~ res:", data);
-        // console.log("Restaurant Detail:", data);
+        setRestaurant(data);
       } catch (error) {
         setLoading(false);
         setNotFound(true);
@@ -40,8 +43,16 @@ export default function RestaurantDetailPage() {
   }
 
   return (
-    <div>
-      <h1>Nhà hàng ID: {id}</h1>
-    </div>
+    <section className="bg-gray-100 min-h-screen pb-4">
+      <div className="container mx-auto px-4 py-8 ">
+        <Breadcrumbs
+          labelMap={{
+            restaurants: "Nhà hàng",
+            [id]: restaurant?.name,
+          }}
+        />
+        {loading ? <FullScreenLoader /> : <RestaurantDetail restaurant={restaurant} />}
+      </div>
+    </section>
   );
 }

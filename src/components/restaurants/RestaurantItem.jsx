@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ButtonInteract } from "../ui/interactButton";
 import { useRouter } from "next/navigation";
+import { StarRating } from "../ui/Rating";
 
 export const RestaurantItem = ({ restaurant }) => {
   const { id, image, name, address, description, price_min, price_max } = restaurant;
@@ -47,10 +48,13 @@ export const RestaurantItem = ({ restaurant }) => {
           <span className="text-gray-500">{address}</span>
         </p>
         <p className="text-sm line-clamp-2 my-[6px]">{description}</p>
-        <p className="text-sm text-green-600 flex flex-row gap-[5px] items-center">
-          <CircleDollarSign size={16} /> {price_min.toLocaleString()}đ -{" "}
-          {price_max.toLocaleString()}đ
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-green-600 flex flex-row gap-[5px] items-center">
+            <CircleDollarSign size={16} /> {price_min.toLocaleString()}đ -{" "}
+            {price_max.toLocaleString()}đ
+          </p>
+          <StarRating rating={4} />
+        </div>
       </li>
     </>
   );

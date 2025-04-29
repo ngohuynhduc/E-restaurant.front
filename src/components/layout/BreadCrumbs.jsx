@@ -29,7 +29,7 @@ export const Breadcrumbs = ({ labelMap }) => {
         <Link
           href={href}
           className={`hover:underline capitalize ${
-            index === pathSegments.length - 1 ? "font-bold" : ""
+            index === pathSegments.length - 1 ? "font-bold text-[#FF9C00]" : ""
           }`}
         >
           {label}

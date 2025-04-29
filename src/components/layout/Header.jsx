@@ -3,11 +3,14 @@
 import { ROLES } from "@/app/shared/const";
 import { useUserStore } from "@/store/useUserStore";
 import { useCategoriesStore } from "@/store/useRestaurantStore";
-import { ChevronDown, Search, UserRound } from "lucide-react";
+import { ChevronDown, MoveRightIcon, Search, UserRound } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import _, { debounce } from "lodash";
+import { motion } from "framer-motion";
+import { getImageUrl } from "@/lib/utils";
 
 const menu = [
   {
@@ -41,15 +44,18 @@ export const Header = () => {
   const user = useUserStore((state) => state.user);
   const categories = useCategoriesStore((state) => state.categories);
   const router = useRouter();
-  console.log("🚀 ~ Header ~ categories:", categories);
   const [openMenuUser, setIsOpenMenuUser] = useState(false);
   const [openSubMenu, setOpenSubMenu] = useState(null);
   const [searchValue, setSearchValue] = useState("");
+  const [results, setResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isFetchingSearch, setIsFetchingSearch] = useState(false);
   const userMenuRef = useRef();
   const subMenuRef = useRef();
+  const searchResultsRef = useRef();
+  const searchValueRef = useRef("");
 
   const { data: session, status } = useSession();
-  console.log("🚀 ~ Header ~ session:", status);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -60,16 +66,23 @@ export const Header = () => {
       if (subMenuRef.current && !subMenuRef.current.contains(event.target)) {
         setOpenSubMenu(null);
       }
+      if (searchResultsRef.current && !searchResultsRef.current.contains(event.target)) {
+        setShowResults(false);
+        setIsFetchingSearch(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [userMenuRef, subMenuRef]);
+  }, [userMenuRef, subMenuRef, searchResultsRef]);
 
   useEffect(() => {
     setSearchValue("");
+    setShowResults(false);
+    setResults([]);
+    setIsFetchingSearch(false);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -79,7 +92,6 @@ export const Header = () => {
       });
     }
 
-    // Đăng xuất trên NextAuth
     signOut({ callbackUrl: "/" });
   };
 
@@ -95,10 +107,6 @@ export const Header = () => {
     setIsOpenMenuUser(!openMenuUser);
     setOpenSubMenu(null);
   };
-
-  if (excludeUrl.includes(pathname)) {
-    return null;
-  }
 
   const renderSubMenu = (id, subMenu) => {
     const categoriesData = categories.map((category) => ({
@@ -137,28 +145,142 @@ export const Header = () => {
     }
   };
 
+  const fetchResults = async (searchText) => {
+    const searchParams = encodeURIComponent(searchText);
+    if (searchText !== searchValueRef.current) return;
+    const res = await fetch(`/api/restaurants?q=${searchParams}&page=1&limit=5`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    setIsFetchingSearch(false);
+    setResults(data?.data);
+    setShowResults(true);
+  };
+
+  const debounceFetchSearch = useCallback(debounce(fetchResults, 2000), []);
+
+  const handleFetchDebouncedSearch = (e) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    searchValueRef.current = value;
+
+    if (!value.trim()) {
+      setIsFetchingSearch(false);
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+    if (value.trim()) {
+      setIsFetchingSearch(true);
+      debounceFetchSearch(value);
+    }
+    setResults([]);
+    setShowResults(false);
+  };
+
+  const renderResults = () => {
+    if (isFetchingSearch && !showResults) {
+      return (
+        <>
+          <span className="text-[16px] font-semibold">Đang tìm kiếm...</span>
+          <img src="/magnify.svg" alt="loading" />
+        </>
+      );
+    }
+
+    if (!isFetchingSearch && showResults) {
+      return !_.isEmpty(results) ? (
+        <>
+          <div className="w-full max-h-[300px] overflow-y-auto">
+            {results.map((item) => (
+              <Link
+                key={item.id}
+                href={`/restaurants/${item.id}`}
+                className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-md"
+                onClick={() => {
+                  setSearchValue("");
+                  setShowResults(false);
+                }}
+              >
+                <img
+                  src={getImageUrl(item.image)}
+                  alt={item.name}
+                  className="w-20 h-20 rounded-md object-cover"
+                />
+                <div className="flex flex-col">
+                  <span className="text-[16px] font-semibold">{item.name}</span>
+                  <span className="text-[14px] text-gray-500 line-clamp-2">{item.address}</span>
+                </div>
+              </Link>
+            ))}
+            <Link
+              href={"/restaurants?q=" + searchValue}
+              className="text-[#FF9C00] font-semibold flex items-center gap-1"
+            >
+              Xem tất cả <MoveRightIcon size={16} />
+            </Link>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-[16px] font-semibold">Không tìm thấy nhà hàng nào</div>
+          <Link
+            href={"/restaurants"}
+            className="text-[#FF9C00] font-semibold flex items-center gap-1"
+          >
+            Xem tất cả <MoveRightIcon size={16} />
+          </Link>
+        </>
+      );
+    }
+  };
+
+  if (excludeUrl.includes(pathname)) {
+    return null;
+  }
+
   return (
     <header className="sticky h-[80px] top-0 z-[999] bg-[#FF9C00] shadow-md">
       <div className="container mx-auto h-full w-full">
-        <div className="flex items-center gap-[50px] justify-between py-[8px] h-full">
+        <div className="flex items-center gap-[20px] justify-between py-[8px] h-full">
           <div className="flex items-center">
             <Link href="/" className="h-[80px] flex items-center text-left">
               <img src="/logo-e.png" alt="Logo" className="h-[80px]" />
             </Link>
           </div>
-          <div className="relative mr-6 w-[400px]">
+          <div className="relative mr-6 w-[300px] xl:w-[500px]">
             <input
               type="text"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(e) => handleFetchDebouncedSearch(e)}
               placeholder="Tìm kiếm nhà hàng..."
-              className="pl-10 pr-4 py-2 rounded-full border text-[#F2F2F2] border-[#F2F2F2] focus:outline-none focus:ring-2 focus:ring-[#F2F2F2] focus:border-transparent placeholder-gray-50 w-[400px] transition-all duration-500"
+              className="pl-10 pr-4 py-2 rounded-full border text-[#F2F2F2] border-[#F2F2F2] focus:outline-none focus:ring-2 focus:ring-[#F2F2F2] focus:border-transparent placeholder-gray-50 w-[300px] xl:w-[500px] transition-all duration-500"
               onKeyDown={(e) => handleRedirectSearch(e)}
             />
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#F2F2F2]"
               size={18}
             />
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{
+                opacity:
+                  (isFetchingSearch && !showResults) || (!isFetchingSearch && showResults) ? 1 : 0,
+                y:
+                  (isFetchingSearch && !showResults) || (!isFetchingSearch && showResults)
+                    ? 0
+                    : -20,
+              }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              ref={searchResultsRef}
+              className={`absolute top-12 flex justify-center items-center left-0 w-full bg-white shadow-lg rounded-md p-4 ${
+                (isFetchingSearch && !showResults) || (!isFetchingSearch && showResults)
+                  ? ""
+                  : "pointer-events-none"
+              }`}
+            >
+              {renderResults()}
+            </motion.div>
           </div>
 
           {/* Menu Items */}
@@ -233,12 +355,20 @@ export const Header = () => {
                 )}
               </div>
             ) : (
-              <Link
-                href="/auth/login"
-                className="px-4 py-2 text-sm text-[16px] text-[#860001] rounded-md border-[2px] border-[#860001] hover:bg-[#860001] hover:text-white"
-              >
-                Đăng nhập
-              </Link>
+              <>
+                <Link
+                  href="/auth/register"
+                  className="px-2 py-2 text-sm text-[16px] text-[#860001] rounded-md border-[2px] border-[#860001] hover:bg-[#860001] hover:text-white w-min whitespace-nowrap"
+                >
+                  Đăng ký
+                </Link>
+                <Link
+                  href="/auth/login"
+                  className="ml-2 px-2 py-2 text-sm text-[16px] text-[#860001] rounded-md border-[2px] border-[#860001] hover:bg-[#860001] hover:text-white w-min whitespace-nowrap"
+                >
+                  Đăng nhập
+                </Link>
+              </>
             )}
           </div>
         </div>

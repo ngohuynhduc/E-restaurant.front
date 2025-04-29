@@ -59,7 +59,6 @@ export default function BusinessRegisterPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log("🚀 ~ BusinessRegisterPage ~ loading:", loading);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTables, setSelectedTables] = useState({
@@ -104,7 +103,6 @@ export default function BusinessRegisterPage() {
   useEffect(() => {
     setError("");
   }, [selectedTables, restaurantData, openTimeData]);
-  console.log("🚀 ~ fetchCategories ~ categoriesData:", categories);
 
   useEffect(() => {
     if (status === "authenticated" && !_.isEmpty(session)) {
@@ -234,7 +232,6 @@ export default function BusinessRegisterPage() {
       tables,
       open_time: openTimeData,
     };
-    console.log("🚀 ~ handleSubmit ~ submitValue:", submitValue);
 
     const requiredCheck = Object.entries(submitValue).some(([key, value]) => {
       const loggedinNotRequireField = ["password", "confirm_password", "phone", "description"];
@@ -274,10 +271,8 @@ export default function BusinessRegisterPage() {
       if (result?.ok && response?.message) {
         setIsOpenComplelte(true);
       }
-      console.log("🚀 ~ handleSubmit ~ result:", response);
     } catch (errors) {
       setError(errors?.message);
-      console.log("🚀 ~ handleSubmit ~ errors:", errors);
     } finally {
       setLoading(false);
     }
@@ -320,7 +315,6 @@ export default function BusinessRegisterPage() {
         }));
       }
     } catch (error) {
-      console.log("🚀 ~ handleUploadImage ~ error:", error);
     } finally {
       e.target.value = "";
       setUploading(false);

@@ -11,7 +11,6 @@ export default function GlobalError({ error }) {
   }, [error]);
 
   const status = parseInt(error.message.match(/\d+/)?.[0], 10) || 500;
-  console.log("🚀 ~ GlobalError ~ status:", status);
 
   return (
     <html>
