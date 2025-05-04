@@ -332,7 +332,7 @@ export const Header = () => {
                   >
                     <div className="py-2 px-4 [&>*]:border-b [&>*]:border-[#860001]">
                       <Link
-                        href="/profile"
+                        href="/profile/account"
                         className="block py-2"
                         onClick={() => setIsOpenMenuUser(false)}
                       >

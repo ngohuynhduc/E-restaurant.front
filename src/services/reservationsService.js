@@ -34,4 +34,13 @@ export class ReservationsService {
     const response = await BaseService.get(`/reservations/check-availability?${params}`, headers);
     return response;
   }
+
+  async getReservationById(id, isHolding = false) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.get(
+      `/reservations/get-reservation/${id}?isHolding=${isHolding}`,
+      headers
+    );
+    return response;
+  }
 }

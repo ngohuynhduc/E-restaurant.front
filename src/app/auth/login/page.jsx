@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import loginBG from "@/assets/img/login-bg.jpg";
 import Link from "next/link";
+import FullScreenLoader from "@/components/ui/FullScreenLoader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,10 +36,11 @@ export default function LoginPage() {
     try {
       const result = await signIn("credentials", {
         callbackUrl: callbackUrl,
-        redirect: true,
+        redirect: false,
         email,
         password,
       });
+      console.log("🚀 ~ handleSubmit ~ result:", result);
 
       if (result?.error) {
         setError("Sai tài khoản hoặc mật khẩu!");
@@ -54,6 +56,7 @@ export default function LoginPage() {
 
   return (
     <>
+      {loading && <FullScreenLoader />}
       {status === "unauthenticated" && (
         <div className="relative h-screen w-full overflow-hidden">
           <div

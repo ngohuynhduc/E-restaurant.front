@@ -20,6 +20,7 @@ export const BookingComponent = ({ restaurant }) => {
     time: "",
   });
   const [openDialogLogin, setOpenDialogLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isDisable = useMemo(() => {
     return !numOfCustomer || !dateTimeSelected?.date || !dateTimeSelected?.time;
@@ -28,11 +29,11 @@ export const BookingComponent = ({ restaurant }) => {
   const generateOptions = () => {
     const options = [];
 
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 10; i++) {
       options.push(i);
     }
 
-    for (let i = 22; i <= 100; i += 2) {
+    for (let i = 12; i <= 20; i += 2) {
       options.push(i);
     }
 
@@ -46,58 +47,36 @@ export const BookingComponent = ({ restaurant }) => {
       setOpenDialogLogin(true);
       return;
     }
+    setLoading(true);
 
     const formattedDate = format(dateTimeSelected?.date, "yyyy-MM-dd");
-    const checkAvailibilityParams = {
+
+    const reservationData = {
+      user_id: userData?.id,
+      phone: userData?.phone,
+      email: userData?.email,
       restaurant_id: restaurant.id,
+      guest_count: numOfCustomer,
       date: formattedDate,
       arrival_time: dateTimeSelected?.time,
-      guest_count: numOfCustomer,
+      note: "",
     };
-    console.log("🚀 ~ handleSubmit ~ checkAvailibilityParams:", checkAvailibilityParams);
+    console.log("🚀 ~ handleSubmit ~ reservationData:", reservationData);
 
-    const queryString = new URLSearchParams(checkAvailibilityParams).toString();
-    const response = await fetch(`/api/reservations/check-availability?${queryString}`, {
-      method: "GET",
+    const res = await fetch("/api/reservations/hold", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reservationData),
     });
-    const data = await response.json();
-    console.log("🚀 ~ handleSubmit ~ data:", data);
 
-    if (data?.status !== 200) {
-      alert(data?.message);
-      return;
-    }
+    const result = await res.json();
 
-    if (data?.data?.available) {
-      const reservationData = {
-        user_id: userData?.id,
-        phone: userData?.phone,
-        email: userData?.email,
-        restaurant_id: restaurant.id,
-        guest_count: numOfCustomer,
-        date: formattedDate,
-        arrival_time: dateTimeSelected?.time,
-        note: "",
-      };
-      console.log("🚀 ~ handleSubmit ~ reservationData:", reservationData);
-
-      const res = await fetch("/api/reservations/hold", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
-      });
-
-      const result = await res.json();
-      console.log("🚀 ~ handleSubmit ~ result:", result);
-
-      if (result.status === 200 && result?.data?.hold_id) {
-        alert("Đặt bàn thành công!");
-        router.push(`/reservations?rid=${result?.data?.hold_id}`);
-      } else {
-        alert(result.message);
-      }
+    if (result.status === 200 && result?.data?.hold_id) {
+      router.push(`/reservations/${result?.data?.hold_id}`);
+    } else {
+      alert(result.message);
     }
 
     // setReservationsData({
