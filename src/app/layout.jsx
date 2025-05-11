@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { UserProvider } from "./UserProvider";
 import { Footer } from "@/components/layout/Footer";
 import PageLoading from "@/components/loading/PageLoading";
+import { CommonDialog } from "@/components/ui/CommonDialog";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }) {
             <Header />
             {children}
             <Footer />
+            <CommonDialog />
           </UserProvider>
         </AuthProvider>
       </body>

@@ -21,7 +21,6 @@ export async function GET(req) {
       arrival_time,
       guest_count,
     }).toString();
-    console.log("🚀 ~ GET ~ query:", query);
     const response = await reservationService.checkAvailability(query);
     return NextResponse.json(response);
   } catch (error) {

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../[...nextauth]/route";
-import { redirect } from "next/dist/server/api-utils";
 import validator from "validator";
 import { ErrorsStatus } from "@/app/shared/errorsStatus";
 import { ROLES } from "@/app/shared/const";

@@ -43,4 +43,10 @@ export class ReservationsService {
     );
     return response;
   }
+
+  async getReservationsHistory(params) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.get(`/user/reservations?${params}`, headers);
+    return response;
+  }
 }

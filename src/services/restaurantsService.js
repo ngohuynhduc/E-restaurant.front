@@ -29,9 +29,12 @@ export class RestaurantService {
     return response;
   }
 
-  async getRestaurantById(id) {
+  async getRestaurantById(id, isAdmin = false) {
     const headers = await this.buildHeader();
-    const response = await BaseService.get(`/restaurant/${id}`, headers);
+    const response = await BaseService.get(
+      `/restaurant/${id}${isAdmin ? `?isAdmin=${isAdmin}` : ""}`,
+      headers
+    );
     return response;
   }
 

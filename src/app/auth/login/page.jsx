@@ -11,7 +11,6 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
-  console.log("🚀 ~ LoginPage ~ callbackUrl:", callbackUrl);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,11 +39,18 @@ export default function LoginPage() {
         email,
         password,
       });
-      console.log("🚀 ~ handleSubmit ~ result:", result);
 
       if (result?.error) {
         setError("Sai tài khoản hoặc mật khẩu!");
       } else {
+        const session = await fetch("/api/auth/session").then((res) => res.json());
+        const role = session?.user?.role;
+
+        if (role === "ADMIN") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push(callbackUrl);
+        }
         setLoginSucess(true);
       }
     } catch (error) {

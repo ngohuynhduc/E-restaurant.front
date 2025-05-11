@@ -24,8 +24,13 @@ export default function RestaurantDetailPage() {
         });
         if (!res.ok) {
           setNotFound(true);
+          return;
         }
         const data = await res.json();
+        if (!data?.id) {
+          setNotFound(true);
+          return;
+        }
         setRestaurant(data);
       } catch (error) {
         setLoading(false);

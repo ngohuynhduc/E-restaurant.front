@@ -13,6 +13,7 @@ import { PreviewImage } from "./dialog/PreviewImage";
 import { DetailTabs } from "./DetailTabs";
 import { CircleDollarSign, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { StarRating } from "../ui/Rating";
 
 export const RestaurantDetail = ({ restaurant }) => {
   const swiperRef = useRef(null);
@@ -117,6 +118,7 @@ export const RestaurantDetail = ({ restaurant }) => {
             <MapPin size={20} />
             <span className="text-gray-500">{restaurant?.address}</span>
           </p>
+          <StarRating rating={4} />
         </div>
         <DetailTabs restaurant={restaurant} />
       </div>

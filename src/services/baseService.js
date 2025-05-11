@@ -16,7 +16,7 @@ export class BaseService {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, options);
       const data = await response.json();
-      console.log("🚀 ~ BaseService ~ request ~ data:", data);
+      console.log("🚀 ~ BaseService ~ request ~ data:", `${this.baseURL}${endpoint}`, data);
       if (!response.ok) {
         if (data?.status === ErrorsStatus.Unauthorized && data?.message === "Token expired") {
           throw new Error(data?.message);
@@ -39,6 +39,10 @@ export class BaseService {
 
   static put(endpoint, data, headers = {}) {
     return this.request(endpoint, "PUT", data, headers);
+  }
+
+  static patch(endpoint, data, headers = {}) {
+    return this.request(endpoint, "PATCH", data, headers);
   }
 
   static delete(endpoint, headers = {}) {

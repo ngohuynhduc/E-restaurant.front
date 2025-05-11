@@ -5,7 +5,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export class UserService {
   async buildAuthHeader() {
     const session = await getServerSession(authOptions);
-    console.log("🚀 ~ Home ~ session:", session);
     return {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.accessToken}`,
@@ -15,6 +14,12 @@ export class UserService {
   async getUserInfo() {
     const headers = await this.buildAuthHeader();
     const response = await BaseService.get("/user-info", headers);
+    return response;
+  }
+
+  async updateUserInfo(body) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.put("/user-info", body, headers);
     return response;
   }
 }

@@ -17,7 +17,6 @@ export const ConfirmReservationDialog = ({
   isSubmitting,
   reservationComplete,
   reservationError,
-  restaurantId,
 }) => {
   const router = useRouter();
   const pathname = usePathname();

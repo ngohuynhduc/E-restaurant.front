@@ -18,7 +18,6 @@ export async function POST(req) {
       phone,
       note,
     });
-    console.log("🚀 ~ POST ~ response:", response);
 
     if (response?.status !== ErrorsStatus.OK) {
       return NextResponse.json({ message: "Đặt bàn thất bại!", status: 400 });

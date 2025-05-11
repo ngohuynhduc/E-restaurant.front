@@ -38,7 +38,7 @@ const menu = [
   { id: "news", name: "Tin Tức", href: "/news" },
 ];
 
-const excludeUrl = ["/auth/login", "/auth/register", "/auth/business-register"];
+const excludeUrl = ["/auth/login", "/auth/register", "/auth/business-register", "/admin"];
 
 export const Header = () => {
   const user = useUserStore((state) => state.user);
@@ -235,10 +235,9 @@ export const Header = () => {
     }
   };
 
-  if (excludeUrl.includes(pathname)) {
+  if (excludeUrl.some((url) => pathname.startsWith(url))) {
     return null;
   }
-
   return (
     <header className="sticky h-[80px] top-0 z-[999] bg-[#FF9C00] shadow-md">
       <div className="container mx-auto h-full w-full">

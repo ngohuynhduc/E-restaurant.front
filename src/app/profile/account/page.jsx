@@ -1,24 +1,18 @@
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import ProfileClient from "@/components/profile/Profile";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+"use client";
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
-  console.log("🚀 ~ ProfilePage ~ session:", session);
+import { MyAccount } from "@/components/profile/account/MyAccount";
+import { MenuProfileAside } from "@/components/profile/MenuProfileAside";
+import { useUserStore } from "@/store/useUserStore";
 
-  if (!session) {
-    redirect("/auth/login");
-  }
+const ProfilePage = () => {
+  const { user } = useUserStore((state) => state);
 
   return (
-    <div>
-      {/* <h1>Profile (Server Component)</h1>
-      <p>Server rendered: {session.user.name}</p>
-      <p>Role: {session.user.role}</p> */}
-
-      {/* Client component if needed */}
-      <ProfileClient />
+    <div className="flex flex-row w-full">
+      <MenuProfileAside />
+      <div className="w-[80%]">{user && <MyAccount userInfo={user} />}</div>
     </div>
   );
-}
+};
+
+export default ProfilePage;
