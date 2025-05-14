@@ -7,6 +7,7 @@ import { RestaurantsList } from "@/components/restaurants/RestaurantsList";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useLocationStore } from "@/store/useLocationStore";
 
 export default function RestaurantListClient() {
   const searchParams = useSearchParams();
@@ -16,6 +17,8 @@ export default function RestaurantListClient() {
   console.log("🚀 ~ RestaurantListClient ~ restaurants:", restaurants);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { location: locationClient } = useLocationStore();
+  console.log("🚀 ~ RestaurantListClient ~ location:", locationClient);
 
   const query = useMemo(() => {
     return searchParams.toString(); // ?search=abc&category=1&day=T2
@@ -46,6 +49,10 @@ export default function RestaurantListClient() {
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value);
+      if (key === "sort" && value === "nearby") {
+        params.set("lat", locationClient?.latitude);
+        params.set("lng", locationClient?.longitude);
+      }
     });
 
     params.set("page", "1");

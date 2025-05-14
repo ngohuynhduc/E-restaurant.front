@@ -9,6 +9,9 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { useLocationStore } from "@/store/useLocationStore";
+import { getImageUrl } from "@/lib/utils";
+import Link from "next/link";
 
 // Giả lập dữ liệu từ API
 const restaurantData = [
@@ -77,15 +80,48 @@ const formatPrice = (price) => {
 export default function SuggestRestaurants({ title = "Nhà hàng gần bạn" }) {
   const [restaurants, setRestaurants] = useState(restaurantData);
 
+  const {
+    location: { latitude: lat, longitude: lng },
+  } = useLocationStore();
+  console.log("🚀 ~ SuggestRestaurants ~ lat:", restaurants);
+
+  useEffect(() => {
+    const fetchRestaurants = async (query) => {
+      try {
+        const res = await fetch(
+          `/api/restaurants?lat=${query.lat}&lng=${query.lng}&limit=4&sort=${query.sort}`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await res.json();
+        setRestaurants(data?.data);
+      } catch (err) {
+        throw new Error(err);
+      }
+    };
+
+    if (lat && lng && title === "Nhà hàng gần bạn") {
+      fetchRestaurants({ lat, lng });
+    } else if (title === "Nhà hàng hot!") {
+      fetchRestaurants({ sort: "rating", lat: "", lng: "" });
+    } else {
+      fetchRestaurants({ lat: "", lng: "" });
+    }
+  }, [lat, lng, title]);
+
   return (
     <div className="w-full py-10">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center border-b pb-4 border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-          <button className="text-sm font-semibold text-[#FF9C00] hover:text-orange-600 flex items-center">
+          <Link
+            href="/restaurants"
+            className="text-sm font-semibold text-[#FF9C00] hover:text-orange-600 flex items-center"
+          >
             Xem thêm
             <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+          </Link>
         </div>
 
         <Swiper
@@ -106,7 +142,7 @@ export default function SuggestRestaurants({ title = "Nhà hàng gần bạn" })
                 {/* Restaurant Image */}
                 <div className="relative h-48 w-full overflow-hidden">
                   <img
-                    src={restaurant.image.url}
+                    src={getImageUrl(restaurant.image)}
                     alt={restaurant.name}
                     className="w-full h-full object-cover"
                   />

@@ -1,6 +1,5 @@
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import ProfileClient from "@/components/profile/Profile";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function ProfilePage() {
@@ -18,7 +17,6 @@ export default async function ProfilePage() {
       <p>Role: {session.user.role}</p> */}
 
       {/* Client component if needed */}
-      <ProfileClient />
     </div>
   );
 }

@@ -24,7 +24,6 @@ export async function DELETE(req, { params }) {
 export async function PATCH(req, { params }) {
   try {
     const paramId = await params;
-    console.log("🚀 ~ PATCH ~ params:", paramId);
     const { status } = await req.json();
     const adminService = new AdminServices();
     const response = await adminService.updateStatusRestaurant(paramId?.id, { status });

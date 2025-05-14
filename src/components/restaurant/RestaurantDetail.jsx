@@ -14,13 +14,17 @@ import { DetailTabs } from "./DetailTabs";
 import { CircleDollarSign, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { StarRating } from "../ui/Rating";
+import { useUserStore } from "@/store/useUserStore";
 
-export const RestaurantDetail = ({ restaurant }) => {
+export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
   const swiperRef = useRef(null);
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPreviewImage, setIsPreviewImage] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
+  const { user } = useUserStore((state) => state);
+  console.log("🚀 ~ Sidebar ~ user:", user);
+  const isUser = user?.role === "USER";
 
   const imageList = useMemo(() => {
     return [...(restaurant?.restaurant_image || []), ...(restaurant?.menu_image || [])];
@@ -120,9 +124,9 @@ export const RestaurantDetail = ({ restaurant }) => {
           </p>
           <StarRating rating={4} />
         </div>
-        <DetailTabs restaurant={restaurant} />
+        <DetailTabs restaurant={restaurant} canReview={canReview} />
       </div>
-      <BookingComponent restaurant={restaurant} />
+      {isUser && <BookingComponent restaurant={restaurant} />}
       <PreviewImage
         images={restaurant?.restaurant_image}
         isOpen={isPreviewImage}

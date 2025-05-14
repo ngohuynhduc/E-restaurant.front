@@ -3,17 +3,22 @@
 import { Breadcrumbs } from "@/components/layout/BreadCrumbs";
 import { RestaurantDetail } from "@/components/restaurant/RestaurantDetail";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
+import { useUserStore } from "@/store/useUserStore";
 import _, { set } from "lodash";
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function RestaurantDetailPage() {
   const [restaurant, setRestaurant] = useState({});
-  console.log("🚀 ~ RestaurantDetailPage ~ restaurant:", restaurant);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  console.log("🚀 ~ RestaurantDetailPage ~ canReview:", canReview);
   const params = useParams();
   const id = params?.id;
+  const { user } = useUserStore((state) => state);
+  const isUser = user?.role === "USER";
+  console.log("🚀 ~ RestaurantDetailPage ~ user:", user);
 
   useEffect(() => {
     const fetchRestaurantDetail = async () => {
@@ -43,6 +48,26 @@ export default function RestaurantDetailPage() {
     fetchRestaurantDetail();
   }, []);
 
+  useEffect(() => {
+    if (!isUser) return;
+    const fetchCanReview = async () => {
+      try {
+        const res = await fetch(`/api/reviews/can-review?restaurantId=${id}`, {
+          method: "GET",
+        });
+        const data = await res.json();
+        console.log("🚀 ~ fetchCanReview ~ data:", data);
+        if (data?.canReview) {
+          setCanReview(true);
+        }
+      } catch (error) {
+        console.error("Error fetching can review:", error);
+      }
+    };
+
+    fetchCanReview();
+  }, [isUser]);
+
   if (notFound) {
     throw new Error(404);
   }
@@ -56,7 +81,11 @@ export default function RestaurantDetailPage() {
             [id]: restaurant?.name,
           }}
         />
-        {loading ? <FullScreenLoader /> : <RestaurantDetail restaurant={restaurant} />}
+        {loading ? (
+          <FullScreenLoader />
+        ) : (
+          <RestaurantDetail restaurant={restaurant} canReview={canReview} />
+        )}
       </div>
     </section>
   );

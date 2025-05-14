@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useUserStore } from "@/store/useUserStore";
 
 export default function RestaurantsManagement() {
   const searchParams = useSearchParams();
@@ -31,14 +32,21 @@ export default function RestaurantsManagement() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [total, setTotal] = useState(0);
+  const { user } = useUserStore((state) => state);
+  const userId = user?.id;
 
   const query = useMemo(() => {
     return searchParams.toString(); // ?search=abc&category=1&day=T2
   }, [searchParams]);
 
   useEffect(() => {
-    fetchRestaurants(query);
-  }, [query]);
+    console.log("🚀 ~ useEffect ~ user:", user);
+    if (user?.role === "BUSINESS_OWNER") {
+      fetchRestaurantById(userId);
+    } else if (user?.role === "ADMIN") {
+      fetchRestaurants(query);
+    }
+  }, [query, userId]);
 
   const fetchRestaurants = async (query) => {
     try {
@@ -48,6 +56,20 @@ export default function RestaurantsManagement() {
       const data = await res.json();
       console.log("🚀 ~ fetchRestaurants ~ data:", data);
       setRestaurants(data?.data);
+      setTotal(data?.pagination?.total ?? 0);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  const fetchRestaurantById = async (id) => {
+    try {
+      const res = await fetch(`/api/admin/restaurants/owner?userId=${userId}`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      console.log("🚀 ~ fetchRestaurants ~ data:", data);
+      setRestaurants(data);
       setTotal(data?.pagination?.total ?? 0);
     } catch (err) {
       throw new Error(err);
@@ -82,7 +104,11 @@ export default function RestaurantsManagement() {
       .then((res) => res.json())
       .then((data) => {
         if (data?.status === 200) {
-          fetchRestaurants(query);
+          if (user?.role === "BUSINESS_OWNER") {
+            fetchRestaurantById(userId);
+          } else {
+            fetchRestaurants(query);
+          }
         } else {
           alert(data.message);
         }

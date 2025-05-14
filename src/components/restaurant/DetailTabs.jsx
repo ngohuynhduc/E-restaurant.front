@@ -6,8 +6,9 @@ import { PreviewImage } from "./dialog/PreviewImage";
 import { MenuTab } from "./MenuTab";
 import { OpenTimeTab } from "./OpenTimeTab";
 import { Loader2 } from "lucide-react";
+import { Reviews } from "./Reviews";
 
-export const DetailTabs = ({ restaurant }) => {
+export const DetailTabs = ({ restaurant, canReview }) => {
   const [loadingMap, setLoadingMap] = useState(true);
 
   const lat = useMemo(() => {
@@ -65,7 +66,7 @@ export const DetailTabs = ({ restaurant }) => {
       </TabsContent>
 
       <TabsContent value="reviews">
-        <div className="p-4">⭐ Đây là phần đánh giá từ khách hàng.</div>
+        <Reviews canReview={canReview} />
       </TabsContent>
     </Tabs>
   );

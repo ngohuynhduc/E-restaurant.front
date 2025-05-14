@@ -13,6 +13,9 @@ export async function GET(req) {
     const priceMax = searchParams.get("priceMax") || "";
     const keyword = searchParams.get("q") || "";
     const dayOfWeek = searchParams.get("dayOfWeek") || "";
+    const lat = searchParams.get("lat") || "";
+    const lng = searchParams.get("lng") || "";
+    const sort = searchParams.get("sort") || "";
 
     const filterData = {
       page,
@@ -22,6 +25,9 @@ export async function GET(req) {
       priceMax,
       keyword,
       dayOfWeek,
+      lat,
+      lng,
+      sort,
     };
     const paramsPick = _.pickBy(filterData, (value) => {
       return value !== "" && value !== "0" && value !== null;

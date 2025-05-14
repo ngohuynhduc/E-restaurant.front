@@ -23,7 +23,7 @@ export const ConfirmReservationDialog = ({
 
   const handleSubmit = () => {
     if (reservationComplete) {
-      router.push("/profile");
+      router.push("/profile/reservations-history");
       return;
     }
     onSubmit?.();

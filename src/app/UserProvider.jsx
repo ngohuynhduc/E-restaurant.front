@@ -6,12 +6,23 @@ import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { ErrorsStatus } from "./shared/errorsStatus";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/store/useLocationStore";
 
 export const UserProvider = ({ children }) => {
   const setUser = useUserStore((state) => state.setUser);
   const setCategories = useCategoriesStore((state) => state.setCategories);
+  const setLocation = useLocationStore((state) => state.setLocation);
+
   const { status } = useSession();
   const pathname = usePathname(); //
+  const { latitude, longitude } = useGeolocation();
+
+  useEffect(() => {
+    if (latitude && longitude) {
+      setLocation({ latitude, longitude });
+    }
+  }, [latitude, longitude, setLocation]);
 
   useEffect(() => {
     const fetchUser = async () => {

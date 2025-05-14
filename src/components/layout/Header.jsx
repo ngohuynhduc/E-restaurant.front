@@ -54,8 +54,8 @@ export const Header = () => {
   const subMenuRef = useRef();
   const searchResultsRef = useRef();
   const searchValueRef = useRef("");
-
   const { data: session, status } = useSession();
+  console.log("🚀 ~ Header ~ session:", session);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -339,7 +339,7 @@ export const Header = () => {
                       </Link>
                       {user?.role === ROLES.BUSINESS_OWNER && (
                         <Link
-                          href="/dashboard"
+                          href="/admin/restaurants"
                           className="block py-2"
                           onClick={() => setIsOpenMenuUser(false)}
                         >

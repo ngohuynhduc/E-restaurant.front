@@ -29,7 +29,6 @@ export const RestaurantFilterBar = ({ onFilterChange }) => {
   const ref = useRef(null);
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  console.log("🚀 ~ RestaurantFilterBar ~ filters:", filters);
 
   const handleChange = (key, value) => {
     const updated = { ...filters, [key]: value };
@@ -60,6 +59,7 @@ export const RestaurantFilterBar = ({ onFilterChange }) => {
   }, []);
 
   const handleSubmitFilter = () => {
+    console.log("🚀 ~ handleSubmitFilter ~ filters:", filters);
     onFilterChange && onFilterChange(filters);
   };
 

@@ -43,4 +43,10 @@ export class RestaurantService {
     const response = await BaseService.get(`/restaurant/restaurants?${params}`, headers);
     return response;
   }
+
+  async getReviewsByRestaurantId(id) {
+    const headers = await this.buildHeader();
+    const response = await BaseService.get(`/restaurant/reviews/${id}`, headers);
+    return response;
+  }
 }

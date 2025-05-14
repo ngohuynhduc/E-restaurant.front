@@ -22,4 +22,16 @@ export class UserService {
     const response = await BaseService.put("/user-info", body, headers);
     return response;
   }
+
+  async getCanReview(restaurantId) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.get(`/can-review?restaurantId=${restaurantId}`, headers);
+    return response;
+  }
+
+  async writeReview(body) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.post("/review", body, headers);
+    return response;
+  }
 }
