@@ -326,7 +326,7 @@ export const Header = () => {
                 </div>
                 {openMenuUser && (
                   <div
-                    className="absolute top-[50px] mx-auto w-[165px] shadow-md rounded-md text-center bg-white border border-[#860001] text-[#860001]"
+                    className="absolute top-[50px] max-[1380px]:right-[-20px] mx-auto w-[165px] shadow-md rounded-md text-center bg-white border border-[#860001] text-[#860001]"
                     ref={userMenuRef}
                   >
                     <div className="py-2 px-4 [&>*]:border-b [&>*]:border-[#860001]">

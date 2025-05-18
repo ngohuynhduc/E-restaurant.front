@@ -15,6 +15,7 @@ import { CircleDollarSign, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { StarRating } from "../ui/Rating";
 import { useUserStore } from "@/store/useUserStore";
+import { ROLES } from "@/app/shared/const";
 
 export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
   const swiperRef = useRef(null);
@@ -24,7 +25,7 @@ export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
   const [startIndex, setStartIndex] = useState(0);
   const { user } = useUserStore((state) => state);
   console.log("🚀 ~ Sidebar ~ user:", user);
-  const isUser = user?.role === "USER";
+  const isNotUser = user?.role === ROLES.ADMIN || user?.role === ROLES.BUSINESS_OWNER;
 
   const imageList = useMemo(() => {
     return [...(restaurant?.restaurant_image || []), ...(restaurant?.menu_image || [])];
@@ -126,7 +127,7 @@ export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
         </div>
         <DetailTabs restaurant={restaurant} canReview={canReview} />
       </div>
-      {isUser && <BookingComponent restaurant={restaurant} />}
+      {!isNotUser && <BookingComponent restaurant={restaurant} />}
       <PreviewImage
         images={restaurant?.restaurant_image}
         isOpen={isPreviewImage}

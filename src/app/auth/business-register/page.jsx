@@ -408,7 +408,9 @@ export default function BusinessRegisterPage() {
 
   const renderStep1 = () => (
     <>
-      <h2 className="text-xl font-bold text-[#FC8842] mb-4">Thông tin tài khoản</h2>
+      <h2 className="text-xl max-[1380px]:text-[16px] font-bold text-[#FC8842] mb-4">
+        Thông tin tài khoản
+      </h2>
       <div>
         <label htmlFor="email" className="flex text-sm font-bold text-gray-700 mb-1">
           Email
@@ -525,7 +527,9 @@ export default function BusinessRegisterPage() {
         >
           <ChevronLeft />
         </button>
-        <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
+        <h2 className="text-xl font-bold max-[1380px]:text-[16px] text-[#FC8842]">
+          Thông tin nhà hàng
+        </h2>
       </div>
 
       <div>
@@ -646,7 +650,9 @@ export default function BusinessRegisterPage() {
         >
           <ChevronLeft />
         </button>
-        <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
+        <h2 className="text-xl max-[1380px]:text-[16px] font-bold text-[#FC8842]">
+          Thông tin nhà hàng
+        </h2>
       </div>
 
       <div>
@@ -930,7 +936,9 @@ export default function BusinessRegisterPage() {
         >
           <ChevronLeft />
         </button>
-        <h2 className="text-xl font-bold text-[#FC8842]">Thông tin nhà hàng</h2>
+        <h2 className="text-xl font-bold max-[1380px]:text-[16px] text-[#FC8842]">
+          Thông tin nhà hàng
+        </h2>
       </div>
 
       <div className="mt-4 flex flex-row justify-between self-center">
@@ -1106,10 +1114,10 @@ export default function BusinessRegisterPage() {
         <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-white p-8">
           <div className="w-full max-w-md">
             <Link href="/">
-              <img src="/logo-e.png" alt="Logo" className="mx-auto" />
+              <img src="/logo-e.png" alt="Logo" className="mx-auto max-[1380px]:w-[200px]" />
             </Link>
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-[#FC8842]">Liên kết với chúng tôi!</h1>
+              <h1 className="text-xl font-bold text-[#FC8842]">Liên kết với chúng tôi!</h1>
             </div>
 
             {error && <div className="px-4 py-1 bg-red-100 text-red-800 rounded mb-4">{error}</div>}
