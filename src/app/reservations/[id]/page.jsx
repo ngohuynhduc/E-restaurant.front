@@ -14,7 +14,6 @@ export default function ReservationsPage() {
   const { data: session, status } = useSession();
   const userData = useUserStore((state) => state.user);
   const [reservationsData, setReservationsData] = useState({});
-  console.log("🚀 ~ ReservationsPage ~ reservationsData:", reservationsData);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -61,14 +60,10 @@ export default function ReservationsPage() {
     throw new Error(404);
   }
 
-  if (status === "unauthenticated") {
-    router.push("/auth/login");
-  }
-
   return (
     <>
       {loading && <FullScreenLoader />}
-      {!_.isEmpty(reservationsData) && !_.isEmpty(userData) ? (
+      {!_.isEmpty(reservationsData) ? (
         <ReservationForm reservationData={reservationsData} userData={userData} />
       ) : (
         <div className="text-center mt-4 p-4 min-h-[70vh] flex flex-col items-center justify-center">

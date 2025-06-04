@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Loader2, Star } from "lucide-react";
+import { Edit, Loader2, Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +18,13 @@ import { ButtonInteract } from "@/components/ui/interactButton";
 import { uploadMultipleImage } from "@/services/uploadImageService";
 import { useParams } from "next/navigation";
 
-export default function ReviewDialog() {
+export default function ReviewDialog({ isEdit = false, reviewData = null, onComplete }) {
   const [open, setOpen] = useState(false);
-  const [rating, setRating] = useState(0);
+  console.log("🚀 ~ ReviewDialog ~ open:", open);
+  const [rating, setRating] = useState(reviewData ? reviewData.rating : 0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [content, setContent] = useState("");
-  const [images, setImages] = useState("");
+  const [content, setContent] = useState(reviewData ? reviewData.comment : "");
+  const [images, setImages] = useState(reviewData ? reviewData.image : "");
   const [uploading, setUploading] = useState(false);
   const params = useParams();
   const id = params?.id;
@@ -78,7 +79,7 @@ export default function ReviewDialog() {
     }
 
     // Create review data object
-    const reviewData = {
+    const reviewDataSubmit = {
       restaurantId: id,
       rating,
       comment: content,
@@ -86,12 +87,13 @@ export default function ReviewDialog() {
     };
 
     try {
-      const res = await fetch(`/api/reviews`, {
-        method: "POST",
+      const endpoint = isEdit ? `/api/reviews/${reviewData.id}` : `/api/reviews`;
+      const res = await fetch(endpoint, {
+        method: isEdit ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(reviewData),
+        body: JSON.stringify(reviewDataSubmit),
       });
 
       const data = await res.json();
@@ -99,6 +101,7 @@ export default function ReviewDialog() {
 
       if (data.status === 201) {
         alert("Đánh giá thành công");
+        onComplete?.();
       } else {
         alert("Đánh giá không thành công");
       }
@@ -117,7 +120,14 @@ export default function ReviewDialog() {
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <ButtonInteract>Đánh giá</ButtonInteract>
+          {isEdit ? (
+            <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+              <Edit className="h-4 w-4" />
+              Chỉnh sửa
+            </button>
+          ) : (
+            <ButtonInteract>Viết đánh giá</ButtonInteract>
+          )}
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

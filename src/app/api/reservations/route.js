@@ -5,10 +5,10 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   try {
     const requestData = await req.json();
-    const { reservation_id, phone, note } = requestData;
+    const { reservation_id, phone, note, full_name, email, promotion_id } = requestData;
 
     // Validate input
-    if (!phone || !reservation_id) {
+    if (!phone || !full_name || !email || !reservation_id) {
       return NextResponse.json({ message: "Thiếu thông tin đặt bàn" }, { status: 400 });
     }
 
@@ -17,6 +17,9 @@ export async function POST(req) {
       reservation_id,
       phone,
       note,
+      full_name,
+      email,
+      promotion_id,
     });
 
     if (response?.status !== ErrorsStatus.OK) {

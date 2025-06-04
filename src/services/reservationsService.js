@@ -7,7 +7,7 @@ export class ReservationsService {
     const session = await getServerSession(authOptions);
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session.accessToken}`,
+      ...(session?.accessToken && { Authorization: `Bearer ${session.accessToken}` }),
     };
   }
 
@@ -24,7 +24,7 @@ export class ReservationsService {
   }
 
   async reservationsHold(body) {
-    const headers = await this.buildAuthHeader();
+    const headers = body.user_id ? await this.buildAuthHeader() : await this.buildHeader();
     const response = await BaseService.post("/reservations/hold", body, headers);
     return response;
   }
@@ -47,6 +47,12 @@ export class ReservationsService {
   async getReservationsHistory(params) {
     const headers = await this.buildAuthHeader();
     const response = await BaseService.get(`/user/reservations?${params}`, headers);
+    return response;
+  }
+
+  async cancelReservation(reservationId) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.put(`/reservations/cancel/${reservationId}`, null, headers);
     return response;
   }
 }

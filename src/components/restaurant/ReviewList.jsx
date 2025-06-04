@@ -1,11 +1,17 @@
 "use client";
 
-import React from "react";
-import { Star } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Edit, MoreVertical, Star, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { useUserStore } from "@/store/useUserStore";
+import ReviewDialog from "./dialog/ReviewDialog";
 
-export default function ReviewList({ reviews }) {
+export default function ReviewList({ reviews, handleComplete }) {
+  console.log("🚀 ~ ReviewList ~ reviews:", reviews);
+  const { user } = useUserStore((state) => state);
+  const [openMenuId, setOpenMenuId] = useState(null);
+
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
@@ -13,6 +19,10 @@ export default function ReviewList({ reviews }) {
     } catch (error) {
       return dateString;
     }
+  };
+
+  const toggleMenu = (reviewId) => {
+    setOpenMenuId(openMenuId === reviewId ? null : reviewId);
   };
 
   const renderStars = (rating) => {
@@ -30,6 +40,21 @@ export default function ReviewList({ reviews }) {
         ))}
       </div>
     );
+  };
+
+  const handleDelete = async (id) => {
+    const res = await fetch(`/api/reviews/${id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+    console.log("🚀 ~ handleDelete ~ data:", data);
+    if (data.status === 200) {
+      alert("Xóa đánh giá thành công");
+      handleComplete?.();
+    } else {
+      alert("Xóa đánh giá không thành công");
+    }
   };
 
   return (
@@ -52,7 +77,38 @@ export default function ReviewList({ reviews }) {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-medium">{review.user_name}</h3>
-                    <span className="text-xs text-gray-500">{formatDate(review.created_at)}</span>
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <span className="text-xs text-gray-500">{formatDate(review.created_at)}</span>
+
+                      {review?.user_id === user?.id && (
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleMenu(review.id)}
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            aria-label="Menu hành động"
+                          >
+                            <MoreVertical className="h-4 w-4 text-gray-500" />
+                          </button>
+
+                          {openMenuId === review.id && (
+                            <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-10 min-w-[120px]">
+                              <ReviewDialog
+                                isEdit
+                                reviewData={review}
+                                onComplete={handleComplete}
+                              />
+                              <button
+                                onClick={() => handleDelete(review.id)}
+                                className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Xóa
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="mb-2">{renderStars(review.rating)}</div>

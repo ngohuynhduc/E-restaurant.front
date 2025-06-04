@@ -44,7 +44,6 @@ export const RestaurantFilterBar = ({ onFilterChange }) => {
       const rect = element.getBoundingClientRect();
       const isElementSticky =
         (currentPosition === "sticky" || currentPosition === "-webkit-sticky") && rect.top === 80;
-      console.log("🚀 ~ checkSticky ~ isElementSticky:", rect.top);
 
       setIsSticky(isElementSticky);
     };

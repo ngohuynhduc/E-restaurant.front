@@ -34,4 +34,16 @@ export class UserService {
     const response = await BaseService.post("/review", body, headers);
     return response;
   }
+
+  async updateReview(body, id) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.put(`/review/${id}`, body, headers);
+    return response;
+  }
+
+  async deleteReview(id) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.delete(`/review/${id}`, headers);
+    return response;
+  }
 }

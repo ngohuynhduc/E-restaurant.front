@@ -8,7 +8,7 @@ export async function POST(req) {
       requestData;
 
     // Validate input
-    if (!user_id || !phone || !restaurant_id) {
+    if (!restaurant_id) {
       return NextResponse.json({ message: "Thiếu thông tin đặt bàn" }, { status: 400 });
     }
 

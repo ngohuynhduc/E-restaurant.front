@@ -4,8 +4,9 @@ export const StarRating = ({ rating }) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 >= 0.5;
   const totalStars = 5;
+  console.log("🚀 ~ StarRating ~ rating:", rating);
 
-  return (
+  return rating ? (
     <div className="flex items-center gap-1">
       {Array.from({ length: totalStars }, (_, i) => {
         if (i < fullStars)
@@ -15,5 +16,7 @@ export const StarRating = ({ rating }) => {
         return <Star key={i} size={20} className="text-gray-300" />;
       })}
     </div>
+  ) : (
+    <div className="text-sm text-yellow-600">Chưa có đánh giá</div>
   );
 };

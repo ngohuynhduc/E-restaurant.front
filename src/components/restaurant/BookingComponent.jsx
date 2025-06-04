@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, User } from "lucide-react";
+import { Clock, TicketPercent, User } from "lucide-react";
 import { DateTimeSelector } from "./dialog/DatePicker";
 import { useMemo, useState } from "react";
 import { ButtonInteract } from "../ui/interactButton";
@@ -43,25 +43,24 @@ export const BookingComponent = ({ restaurant }) => {
   const options = generateOptions();
 
   const handleSubmit = async () => {
-    if (status === "unauthenticated") {
-      setOpenDialogLogin(true);
-      return;
-    }
+    // if (status === "unauthenticated") {
+    //   setOpenDialogLogin(true);
+    //   return;
+    // }
     setLoading(true);
 
     const formattedDate = format(dateTimeSelected?.date, "yyyy-MM-dd");
 
     const reservationData = {
-      user_id: userData?.id,
-      phone: userData?.phone,
-      email: userData?.email,
+      user_id: userData?.id || null,
+      phone: userData?.phone || null,
+      email: userData?.email || null,
       restaurant_id: restaurant.id,
       guest_count: numOfCustomer,
       date: formattedDate,
       arrival_time: dateTimeSelected?.time,
       note: "",
     };
-    console.log("🚀 ~ handleSubmit ~ reservationData:", reservationData);
 
     const res = await fetch("/api/reservations/hold", {
       method: "POST",
@@ -128,6 +127,21 @@ export const BookingComponent = ({ restaurant }) => {
       <ButtonInteract disabled={isDisable} onClick={() => handleSubmit()}>
         Đặt bàn ngay!
       </ButtonInteract>
+      {restaurant?.promotions?.length > 0 && (
+        <div>
+          <div className="text-center text-[18px] font-semibold text-gray-500 mb-2">
+            Đặt bàn ngay để hưởng ưu đãi
+          </div>
+          <ul className="list-none text-[16px] text-red-700">
+            {restaurant.promotions.map((promo, index) => (
+              <li key={index} className="flex items-center gap-2 mb-2 justify-center">
+                <TicketPercent size={20} className="self-start justify-self-start" />
+                <div className="max-w-[calc(100%-40px)] text-center">{promo.description}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <RequestLogin isOpen={openDialogLogin} setIsOpen={setOpenDialogLogin} />
     </div>
   );

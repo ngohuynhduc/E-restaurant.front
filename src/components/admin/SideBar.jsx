@@ -13,6 +13,7 @@ import {
   ChevronUp,
   ChevronDown,
   Megaphone,
+  Ticket,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/store/useUserStore";
@@ -57,7 +58,6 @@ export const Sidebar = () => {
         </Link>
       </div>
 
-      {/* Menu Sections */}
       <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Pages</div>
       <div className="flex-1 px-3">
         {isAdmin && (
@@ -141,9 +141,7 @@ export const Sidebar = () => {
           </Link>
         </div>
 
-        {/* Finance */}
-
-        <div className="mb-1">
+        {/* <div className="mb-1">
           <Link
             href="/messages"
             className="flex items-center justify-between w-full p-2 rounded-lg text-gray-700 hover:bg-gray-100"
@@ -156,7 +154,7 @@ export const Sidebar = () => {
               <span className="text-white text-xs">4</span>
             </div>
           </Link>
-        </div>
+        </div> */}
 
         {isMerchant && (
           <div className="mb-1">
@@ -176,11 +174,27 @@ export const Sidebar = () => {
           </div>
         )}
 
-        {/* More Section */}
+        {isMerchant && (
+          <div className="mb-1">
+            <Link
+              href="/admin/promotions"
+              className={`flex items-center justify-between w-full p-2 rounded-lg ${
+                pathname.includes("/promotions")
+                  ? "bg-violet-100 text-violet-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <div className="flex items-center">
+                <Ticket size={18} className="mr-2" />
+                <span className="font-medium">Khuyến mãi</span>
+              </div>
+            </Link>
+          </div>
+        )}
+
         <div className="mt-6">
           <div className="px-1 py-2 text-xs font-medium text-gray-500 uppercase">Cài đặt</div>
 
-          {/* Authentication */}
           <div className="mb-1">
             <Link
               href="/"
@@ -197,7 +211,6 @@ export const Sidebar = () => {
             </Link>
           </div>
 
-          {/* Onboarding */}
           <div className="mb-1">
             <button
               onClick={() => toggleMenu("onboarding")}

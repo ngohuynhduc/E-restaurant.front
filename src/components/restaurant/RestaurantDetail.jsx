@@ -18,6 +18,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { ROLES } from "@/app/shared/const";
 
 export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
+  console.log("🚀 ~ RestaurantDetail ~ restaurant:", restaurant);
   const swiperRef = useRef(null);
   const router = useRouter();
   const [activeSlide, setActiveSlide] = useState(0);
@@ -123,7 +124,7 @@ export const RestaurantDetail = ({ restaurant, canReview, reviewLists }) => {
             <MapPin size={20} />
             <span className="text-gray-500">{restaurant?.address}</span>
           </p>
-          <StarRating rating={4} />
+          <StarRating rating={parseFloat(restaurant?.avg_rating, 10)} />
         </div>
         <DetailTabs restaurant={restaurant} canReview={canReview} />
       </div>

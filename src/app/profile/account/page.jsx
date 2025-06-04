@@ -6,6 +6,7 @@ import { useUserStore } from "@/store/useUserStore";
 
 const ProfilePage = () => {
   const { user } = useUserStore((state) => state);
+  console.log("🚀 ~ ProfilePage ~ user:", user);
 
   return (
     <div className="flex flex-row w-full">

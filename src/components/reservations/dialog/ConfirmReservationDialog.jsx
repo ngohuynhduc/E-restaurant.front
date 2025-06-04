@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ButtonInteract } from "@/components/ui/interactButton";
+import { useUserStore } from "@/store/useUserStore";
 import { CircleCheckBig, CircleX, Loader2, XIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -20,10 +21,15 @@ export const ConfirmReservationDialog = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const userData = useUserStore((state) => state.user);
 
   const handleSubmit = () => {
-    if (reservationComplete) {
+    if (reservationComplete && userData?.id) {
       router.push("/profile/reservations-history");
+      return;
+    }
+    if (reservationComplete) {
+      router.push("/");
       return;
     }
     onSubmit?.();
@@ -37,8 +43,6 @@ export const ConfirmReservationDialog = ({
   };
 
   const renderContent = useMemo(() => {
-    console.log("🚀 ~ renderContent ~ reservationError:", reservationError);
-
     if (isSubmitting)
       return (
         <div className="text-xl font-semibold flex flex-col items-center gap-4">
@@ -51,6 +55,7 @@ export const ConfirmReservationDialog = ({
         <>
           <CircleCheckBig size={128} color="green" />
           <p className="text-xl font-semibold">Đặt bàn thành công!</p>
+          <p className="text-[16px] font-semibold">Hãy kiểm tra mail xác nhận!</p>
         </>
       );
     if (reservationError) {
@@ -76,7 +81,7 @@ export const ConfirmReservationDialog = ({
             <XIcon />
           </span>
         </DialogHeader>
-        <DialogDescription className="mt-2 flex flex-col gap-4 items-center">
+        <div className="mt-2 flex flex-col gap-4 items-center">
           {renderContent}
           <div className="flex flex-row gap-4 mt-auto">
             {!reservationComplete && !reservationError ? (
@@ -93,10 +98,10 @@ export const ConfirmReservationDialog = ({
               className="mt-4 min-w-[100px] flex items-center gap-2"
               onClick={handleSubmit}
             >
-              {reservationComplete ? "Theo dõi đơn đặt bàn" : "Xác nhận"}
+              {reservationComplete && userData?.id ? "Theo dõi đơn đặt bàn" : "Xác nhận"}
             </ButtonInteract>
           </div>
-        </DialogDescription>
+        </div>
       </DialogContent>
     </Dialog>
   );

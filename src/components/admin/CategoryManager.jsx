@@ -31,8 +31,8 @@ export default function CategoryManager() {
   const [editData, setEditData] = useState(null);
   const { showDialog } = useDialogStore();
   const { user } = useUserStore((state) => state);
-  console.log("🚀 ~ Sidebar ~ user:", user);
   const isAdmin = user?.role === "ADMIN";
+
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
     const res = await fetch("/api/admin/categories", {

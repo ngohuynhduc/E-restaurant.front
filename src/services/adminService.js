@@ -67,4 +67,22 @@ export class AdminServices {
     const response = await BaseService.patch(`/admin/reservation/${id}`, body, headers);
     return response;
   }
+
+  async getListPromotionsByRestaurant(id) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.get(`/admin/promotions/${id}`, headers);
+    return response;
+  }
+
+  async createPromotion(body) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.post("/restaurant/promotions", body, headers);
+    return response;
+  }
+
+  async deletePromotion(id) {
+    const headers = await this.buildAuthHeader();
+    const response = await BaseService.delete(`/admin/promotions/${id}`, headers);
+    return response;
+  }
 }

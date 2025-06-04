@@ -11,25 +11,26 @@ export const Reviews = ({ canReview }) => {
   const [loading, setLoading] = useState(false);
   const params = useParams();
   const id = params?.id;
-  useEffect(() => {
-    const fetchReviewsList = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/reviews/restaurant-reviews?restaurantId=${id}`, {
-          method: "GET",
-        });
-        const data = await res.json();
-        console.log("🚀 ~ fetchReviewsList ~ data:", data);
-        if (data?.length > 0) {
-          setListReviews(data);
-        }
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
+  const fetchReviewsList = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/reviews/restaurant-reviews?restaurantId=${id}`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      console.log("🚀 ~ fetchReviewsList ~ data:", data);
+      if (data?.length > 0) {
+        setListReviews(data);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchReviewsList();
   }, []);
 
@@ -37,11 +38,11 @@ export const Reviews = ({ canReview }) => {
     <div className="space-y-2 p-4">
       {loading && <Loader2 className="animate-spin mx-auto text-gray-500" size={64} />}
       {listReviews.length > 0 ? (
-        <ReviewList reviews={listReviews} />
+        <ReviewList reviews={listReviews} handleComplete={fetchReviewsList} />
       ) : (
         <p className="text-gray-500">Chưa có đánh giá nào</p>
       )}
-      {canReview && <ReviewDialog />}
+      {canReview && <ReviewDialog onComplete={fetchReviewsList} />}
     </div>
   );
 };

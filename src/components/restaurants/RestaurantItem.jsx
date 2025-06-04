@@ -6,8 +6,15 @@ import { useRouter } from "next/navigation";
 import { StarRating } from "../ui/Rating";
 
 export const RestaurantItem = ({ restaurant }) => {
-  const { id, image, name, address, description, price_min, price_max } = restaurant;
+  const { id, image, name, address, description, price_min, price_max, avg_rating } = restaurant;
   const router = useRouter();
+
+  const hightestDiscount = useMemo(() => {
+    if (restaurant?.promotions && restaurant.promotions.length > 0) {
+      return Math.max(...restaurant.promotions.map((discount) => discount.discount));
+    }
+    return 0;
+  }, [restaurant]);
 
   const imageUrl = useMemo(() => {
     return JSON.parse(image).url;
@@ -20,6 +27,11 @@ export const RestaurantItem = ({ restaurant }) => {
   return (
     <>
       <li key={id} className="relative border rounded-xl overflow-hidden p-4 cursor-pointer">
+        {hightestDiscount > 0 && (
+          <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-4 py-2 rounded-full">
+            Giảm {hightestDiscount}%
+          </span>
+        )}
         <img src={imageUrl} alt={name} className="w-full h-40 object-cover rounded-lg mb-2" />
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -53,7 +65,7 @@ export const RestaurantItem = ({ restaurant }) => {
             <CircleDollarSign size={16} /> {price_min.toLocaleString()}đ -{" "}
             {price_max.toLocaleString()}đ
           </p>
-          <StarRating rating={4} />
+          <StarRating rating={parseInt(avg_rating, 10)} />
         </div>
       </li>
     </>
